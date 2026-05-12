@@ -10,6 +10,9 @@ export function DataProvider({ children }) {
   // 1. Centralized State
   const [students, setStudents] = useState([])
   const [staff, setStaff] = useState([])
+  const [generalExpenses, setGeneralExpenses] = useState([])
+  const [fleetLogs, setFleetLogs] = useState([])
+  const [transportRoutes, setTransportRoutes] = useState([])
   const [loading, setLoading] = useState(true)
 
   // Session specific states
@@ -20,10 +23,8 @@ export function DataProvider({ children }) {
   const [feeStats, setFeeStats] = useState({ collected: 0, pending: 0, overdue: 0, total: 2500000 })
   const [holidays, setHolidays] = useState(['2026-01-26', '2026-08-15', '2026-10-02'])
   
-  const [generalExpenses, setGeneralExpenses] = useState([])
-  const [fleetLogs, setFleetLogs] = useState([])
-  const [transportRoutes, setTransportRoutes] = useState([])
   const [vehicles, setVehicles] = useState([])
+  const [classes, setClasses] = useState([])
   const [refreshTick, setRefreshTick] = useState(0)
 
   // Tenant-aware storage keys
@@ -76,6 +77,15 @@ export function DataProvider({ children }) {
 
         const serverVehicles = await api.get('vehicles')
         setVehicles(Array.isArray(serverVehicles) ? serverVehicles : [])
+
+        // Fetch Classes
+        const serverClasses = await api.get('classes', currentSession)
+        if (Array.isArray(serverClasses)) {
+          setClasses(serverClasses)
+        } else {
+          const localClasses = JSON.parse(localStorage.getItem(getStoreKey('classes', currentSession)) || localStorage.getItem(getStoreKey('classes')) || '[]')
+          setClasses(localClasses)
+        }
       } catch (error) {
         console.error("Data loading failed:", error)
       } finally {
@@ -224,7 +234,16 @@ export function DataProvider({ children }) {
     generalExpenses, updateExpenses,
     fleetLogs, updateFleetLogs,
     vehicles, updateVehicles,
-    transportRoutes, updateTransportRoutes: (d) => { api.save('transport', d, currentSession); setTransportRoutes(d) },
+    classes, updateClasses: (d) => { 
+      setClasses(d); 
+      api.save('classes', d, currentSession);
+      localStorage.setItem(getStoreKey('classes', currentSession), JSON.stringify(d));
+    },
+    transportRoutes, updateTransportRoutes: (d) => { 
+      setTransportRoutes(d);
+      api.save('transport', d, currentSession); 
+      localStorage.setItem(getStoreKey('transport', currentSession), JSON.stringify(d));
+    },
     refreshData,
     loading
   }

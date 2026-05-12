@@ -1,21 +1,18 @@
 import { useState } from 'react'
 import { useAuth, MOCK_DATA } from '../../context/AuthContext'
-import { FiLayout, FiPlus, FiUsers, FiEdit2, FiTrash2, FiSave, FiX, FiInfo } from 'react-icons/fi'
+import { FiLayout, FiPlus, FiUsers, FiEdit2, FiTrash2, FiSave, FiX, FiInfo, FiTruck } from 'react-icons/fi'
+import { useData } from '../../context/DataContext'
 
 export default function ClassesPage() {
   const { user } = useAuth()
-  const [classes, setClasses] = useState(() => {
-    const saved = localStorage.getItem('nms_classes')
-    return saved ? JSON.parse(saved) : MOCK_DATA.classesAndSections
-  })
+  const { classes = [], updateClasses } = useData() || {}
 
   const [addModal, setAddModal] = useState(false)
   const [newClass, setNewClass] = useState({ name: '', sections: [{ name: 'A', teacher: '' }] })
 
   const handleSave = () => {
-    const updated = [...classes, { class: newClass.name, sections: newClass.sections }]
-    setClasses(updated)
-    localStorage.setItem('nms_classes', JSON.stringify(updated))
+    const updated = [...classes, { class: newClass.name, sections: newClass.sections, subjects: ['English', 'Hindi', 'Mathematics', 'Science', 'Social Sc.'] }]
+    updateClasses(updated)
     setAddModal(false)
     setNewClass({ name: '', sections: [{ name: 'A', teacher: '' }] })
   }
@@ -23,8 +20,7 @@ export default function ClassesPage() {
   const deleteClass = (idx) => {
     if (window.confirm('Are you sure you want to delete this class?')) {
       const updated = classes.filter((_, i) => i !== idx)
-      setClasses(updated)
-      localStorage.setItem('nms_classes', JSON.stringify(updated))
+      updateClasses(updated)
     }
   }
 

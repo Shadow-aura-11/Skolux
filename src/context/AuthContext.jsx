@@ -223,14 +223,22 @@ export const AuthProvider = ({ children }) => {
       }
     }
 
-    // 2. Check Dynamic Users (Students, etc.)
-    const dynamicUsers = JSON.parse(localStorage.getItem('nms_dynamic_users') || '[]')
-    const found = dynamicUsers.find(
-      u => u.username.toLowerCase() === username.toLowerCase() && u.password === password
+    // 2. Check Dynamic Users (Students, etc.) from the tenant's students list
+    const stuKey = `erp_${school.key}_students_${currentSession}`
+    const studentsList = JSON.parse(localStorage.getItem(stuKey) || localStorage.getItem(`erp_${school.key}_students`) || '[]')
+    const found = studentsList.find(
+      u => u.username?.toLowerCase() === username.toLowerCase() && u.password === password
     )
     if (found) {
-      const { password: _, ...safeUser } = found
-      setUser(safeUser)
+      setUser({
+        id: found.id,
+        username: found.username,
+        role: 'student',
+        name: found.name,
+        class: found.class,
+        avatar: found.name?.[0] || 'S',
+        ...found
+      })
       return true
     }
 

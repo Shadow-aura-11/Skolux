@@ -14,7 +14,7 @@ export default function StudentsPage() {
   const isAdmin = user?.role === 'admin'
   const isTeacher = user?.role === 'teacher'
   
-  const { students = [], updateStudents, refreshData } = useData() || {}
+  const { students = [], updateStudents, refreshData, classes: globalClasses = [] } = useData() || {}
 
   const syncStudents = () => {
     if (!window.confirm(`Standardize student metadata for the CURRENT session (${currentSession})?`)) return
@@ -39,12 +39,11 @@ export default function StudentsPage() {
   const [promoteModal, setPromoteModal] = useState(false)
   const [targetSession, setTargetSession] = useState('')
   const [targetClass, setTargetClass] = useState('')
-  const idConfig = JSON.parse(localStorage.getItem('nms_id_config') || '{"schoolName":"NEW MORNING STAR PUBLIC SCHOOL","themeColor":"#4f46e5","textColor":"#ffffff","showQr":true,"showSign":true,"cardType":"vertical","borderRadius":12,"headerHeight":60}')
+  const idConfig = JSON.parse(localStorage.getItem(`erp_${schoolId}_id_config`) || '{"schoolName":"NEW MORNING STAR PUBLIC SCHOOL","themeColor":"#4f46e5","textColor":"#ffffff","showQr":true,"showSign":true,"cardType":"vertical","borderRadius":12,"headerHeight":60}')
   
-  const transportRoutes = JSON.parse(localStorage.getItem(`nms_transport_${currentSession}`) || localStorage.getItem('nms_transport') || '[]')
-  const globalFeeConfig = JSON.parse(localStorage.getItem('nms_global_fee_config') || '{"classFees":{},"transportFees":{}}')
-  const certConfig = JSON.parse(localStorage.getItem('nms_cert_config') || '{"bgImage":null, "logoImage":null, "signImage":null, "qrImage":null, "contentMarginTop": 0, "showLogo": true, "showSign": true}')
-  const globalClasses = JSON.parse(localStorage.getItem(`nms_classes_${currentSession}`) || localStorage.getItem('nms_classes') || '[]')
+  const transportRoutes = JSON.parse(localStorage.getItem(`erp_${schoolId}_transport_${currentSession}`) || localStorage.getItem(`erp_${schoolId}_transport`) || '[]')
+  const globalFeeConfig = JSON.parse(localStorage.getItem(`erp_${schoolId}_global_fee_config`) || '{"classFees":{},"transportFees":{}}')
+  const certConfig = JSON.parse(localStorage.getItem(`erp_${schoolId}_cert_config`) || '{"bgImage":null, "logoImage":null, "signImage":null, "qrImage":null, "contentMarginTop": 0, "showLogo": true, "showSign": true}')
 
   const getStudentSubjects = (studentClass) => {
     const cls = globalClasses.find(c => c.class === studentClass)
@@ -74,6 +73,8 @@ export default function StudentsPage() {
     // Personal
     dob: '', gender: 'Male', bloodGroup: '', religion: '', nationality: 'Indian', category: 'General', 
     photo: null,
+    // Credentials
+    username: '', password: '',
     // Health & Transport
     allergies: '', medicalConditions: '', height: '', weight: '', transportRoute: 'None', transportStop: '',
     // Previous School
@@ -105,32 +106,23 @@ export default function StudentsPage() {
       const updated = students.map(s => s.id === selectedStudent.id ? { ...s, ...finalData } : s)
       updateStudents(updated)
     } else {
-      const nextIdNum = parseInt(localStorage.getItem('nms_stu_id_counter') || '0') + 1
+      const counterKey = `erp_${schoolId}_stu_id_counter`
+      const nextIdNum = parseInt(localStorage.getItem(counterKey) || '0') + 1
       const newId = `STU${String(nextIdNum).padStart(3, '0')}`
-      localStorage.setItem('nms_stu_id_counter', nextIdNum.toString())
+      localStorage.setItem(counterKey, nextIdNum.toString())
       
-      const newStudent = { ...finalData, id: newId, admissionNo: newId, attendance: 100 }
+      const newStudent = { 
+        ...finalData, 
+        id: newId, 
+        admissionNo: newId, 
+        attendance: 100,
+        // Use provided credentials or auto-generate
+        username: formData.username || (formData.name.split(' ')[0] + newId).toLowerCase(),
+        password: formData.password || Math.random().toString(36).slice(-8)
+      }
       
-      // Auto-generate Login Credentials
-      const username = (formData.name.split(' ')[0] + newId).toLowerCase()
-      const password = Math.random().toString(36).slice(-8)
-      
-      const dynamicUsers = JSON.parse(localStorage.getItem('nms_dynamic_users') || '[]')
-      dynamicUsers.push({
-        id: newId,
-        username,
-        password,
-        role: 'student',
-        name: formData.name,
-        class: formData.class,
-        avatar: formData.name[0]
-      })
-      localStorage.setItem('nms_dynamic_users', JSON.stringify(dynamicUsers))
-
       updateStudents([...students, newStudent])
       refreshData()
-
-      // Simulate SMS Notification
     }
     setModalOpen(false)
   }
@@ -202,13 +194,10 @@ export default function StudentsPage() {
     updateStudents(updated)
     refreshData()
     
-    // Clean up login credentials
-    const dynamicUsers = JSON.parse(localStorage.getItem('nms_dynamic_users') || '[]')
-    const updatedUsers = dynamicUsers.filter(u => u.id !== id)
-    localStorage.setItem('nms_dynamic_users', JSON.stringify(updatedUsers))
+    // Clean up login access is automatic now since it's stored in the student object
     
-    // Clean up session-specific fees if needed (Optional: keeping for audit might be better, but user asked for delete)
-    const feeKey = `nms_fees_${currentSession}`
+    // Clean up session-specific fees if needed
+    const feeKey = `erp_${schoolId}_fees_${currentSession}`
     const currentFees = JSON.parse(localStorage.getItem(feeKey) || '{}')
     if (currentFees[id]) {
       delete currentFees[id]
@@ -241,7 +230,7 @@ export default function StudentsPage() {
         </div>
         <select className="form-select" style={{ width: 150 }} value={filterClass} onChange={e => setFilterClass(e.target.value)}>
           <option value="">All Classes</option>
-          {['UKG', '1st', '2nd', '3rd', '4th', '5th', '6th', '7th', '8th', '9th', '10th'].map(c => <option key={c} value={c}>Class {c}</option>)}
+          {globalClasses.map(c => <option key={c.class} value={c.class}>Class {c.class}</option>)}
         </select>
       </div>
 
@@ -475,7 +464,7 @@ export default function StudentsPage() {
                       <div className="form-group"><label>Full Name *</label><input className="form-input" required value={formData.name} onChange={e => setFormData({...formData, name: e.target.value})} /></div>
                       <div className="form-group"><label>Class *</label>
                         <select className="form-select" value={formData.class} onChange={e => setFormData({...formData, class: e.target.value})}>
-                          {['UKG', '1st', '2nd', '3rd', '4th', '5th', '6th', '7th', '8th', '9th', '10th'].map(c => <option key={c} value={c}>{c}</option>)}
+                          {globalClasses.map(c => <option key={c.class} value={c.class}>{c.class}</option>)}
                         </select>
                       </div>
                       <div className="form-group"><label>Section</label>
@@ -486,6 +475,24 @@ export default function StudentsPage() {
                       <div className="form-group"><label>Student ID {selectedStudent ? '' : '(Auto)'}</label><input className="form-input" value={formData.admissionNo} readOnly={!selectedStudent} style={selectedStudent ? {} : { background: 'var(--gray-50)', cursor: 'not-allowed' }} /></div>
                       <div className="form-group"><label>Roll No</label><input className="form-input" value={formData.rollNo} onChange={e => setFormData({...formData, rollNo: e.target.value})} /></div>
                       <div className="form-group"><label>Adm. Date</label><input type="date" className="form-input" value={formData.admissionDate} onChange={e => setFormData({...formData, admissionDate: e.target.value})} /></div>
+                    </div>
+                    </div>
+                  </div>
+
+                  {/* Part 1.5: Portal Credentials */}
+                  <div className="form-row-group">
+                    <h5 className="form-sub-title">1.5 Portal Access Credentials</h5>
+                    <div className="form-grid">
+                      <div className="form-group">
+                        <label>Portal Username</label>
+                        <input className="form-input" placeholder="e.g. john_stu001" value={formData.username} onChange={e => setFormData({...formData, username: e.target.value})} />
+                        <div style={{fontSize: 10, color: 'var(--gray-400)', marginTop: 4}}>Leave blank for auto-generation</div>
+                      </div>
+                      <div className="form-group">
+                        <label>Portal Password</label>
+                        <input className="form-input" placeholder="Enter secure password" value={formData.password} onChange={e => setFormData({...formData, password: e.target.value})} />
+                        <div style={{fontSize: 10, color: 'var(--gray-400)', marginTop: 4}}>Leave blank for auto-generation</div>
+                      </div>
                     </div>
                   </div>
 

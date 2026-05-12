@@ -1,13 +1,17 @@
 import { useState, useEffect } from 'react'
 import { useAuth } from '../../context/AuthContext'
+import { useData } from '../../context/DataContext'
+import { useParams } from 'react-router-dom'
 import {
   FiSettings, FiUser, FiLock, FiBell, FiShield,
   FiSave, FiCheckCircle, FiCalendar, FiAlertTriangle, FiRefreshCw, FiPlus, FiTrash2, FiDollarSign,
-  FiImage, FiLayout, FiUsers, FiEdit2, FiX, FiInfo, FiFileText, FiGrid
+  FiImage, FiLayout, FiUsers, FiEdit2, FiX, FiInfo, FiFileText, FiGrid, FiTruck
 } from 'react-icons/fi'
 
 export default function SettingsPage() {
   const { user, currentSession, updateSession, sessions, addSession, deleteSession, updateProfile } = useAuth()
+  const { schoolId } = useParams()
+  const { classes, updateClasses, transportRoutes, updateTransportRoutes } = useData() || { classes: [], transportRoutes: [] }
 
   const [activeTab, setActiveTab] = useState('profile')
   const [saved, setSaved] = useState(false)
@@ -49,49 +53,28 @@ export default function SettingsPage() {
     }
   })
 
-  // Classes & Sections Config
-  const [classes, setClasses] = useState([])
-  const [addClassModal, setAddClassModal] = useState(false)
-  const [newClass, setNewClass] = useState({ name: '', sections: [{ name: 'A', teacher: '' }], subjects: [] })
-  const [newSubjectInput, setNewSubjectInput] = useState({})
-  
   // Exam Configuration state
   const [examTypes, setExamTypes] = useState([])
   const [examConfig, setExamConfig] = useState({})
   const [newExamType, setNewExamType] = useState('')
   const [examSelectedClass, setExamSelectedClass] = useState('')
+  
+  // Transport State
+  const [addRouteModal, setAddRouteModal] = useState(false)
+  const [newRoute, setNewRoute] = useState({ route: '', vehicle: '', driver: '', phone: '' })
 
   useEffect(() => {
-    const savedFee = localStorage.getItem(`nms_global_fee_config_${currentSession}`) || localStorage.getItem('nms_global_fee_config')
+    const savedFee = localStorage.getItem(`erp_${schoolId}_global_fee_config_${currentSession}`) || localStorage.getItem(`erp_${schoolId}_global_fee_config`)
     if (savedFee) setGlobalFeeConfig(JSON.parse(savedFee))
 
-    const savedClasses = localStorage.getItem(`nms_classes_${currentSession}`) || localStorage.getItem('nms_classes')
-    const parsedClasses = savedClasses ? JSON.parse(savedClasses) : [
-      { class: 'UKG', sections: [{ name: 'A', teacher: '' }] },
-      { class: '1st', sections: [{ name: 'A', teacher: '' }] },
-      { class: '2nd', sections: [{ name: 'A', teacher: '' }] },
-      { class: '3rd', sections: [{ name: 'A', teacher: '' }] },
-      { class: '4th', sections: [{ name: 'A', teacher: '' }] },
-      { class: '5th', sections: [{ name: 'A', teacher: '' }] },
-      { class: '6th', sections: [{ name: 'A', teacher: '' }] },
-      { class: '7th', sections: [{ name: 'A', teacher: '' }] },
-      { class: '8th', sections: [{ name: 'A', teacher: '' }] },
-      { class: '9th', sections: [{ name: 'A', teacher: '' }] },
-      { class: '10th', sections: [{ name: 'A', teacher: '' }] }
-    ]
-    setClasses(parsedClasses.map(c => ({
-      ...c,
-      subjects: c.subjects || ['English', 'Hindi', 'Mathematics', 'Science', 'Social Sc.']
-    })))
-
-    const savedExamTypes = localStorage.getItem(`nms_exam_types_${currentSession}`)
+    const savedExamTypes = localStorage.getItem(`erp_${schoolId}_exam_types_${currentSession}`)
     setExamTypes(savedExamTypes ? JSON.parse(savedExamTypes) : ['FA1', 'FA2', 'SA1', 'FA3', 'FA4', 'SA2'])
     
-    const savedExamConfig = localStorage.getItem(`nms_exam_config_${currentSession}`)
+    const savedExamConfig = localStorage.getItem(`erp_${schoolId}_exam_config_${currentSession}`)
     setExamConfig(savedExamConfig ? JSON.parse(savedExamConfig) : {})
 
-    if (parsedClasses.length > 0) setExamSelectedClass(parsedClasses[0].class)
-  }, [currentSession])
+    if (classes && classes.length > 0) setExamSelectedClass(classes[0].class)
+  }, [currentSession, classes, schoolId])
 
   const isAdmin = user?.role === 'admin'
 
@@ -134,6 +117,7 @@ export default function SettingsPage() {
       { id: 'fee-config', label: 'Fee Configuration', icon: <FiDollarSign /> },
       { id: 'branding', label: 'Global Branding & Media', icon: <FiImage /> },
       { id: 'classes', label: 'Classes & Sections', icon: <FiLayout /> },
+      { id: 'transport', label: 'Transport Routes', icon: <FiTruck /> },
       { id: 'exams', label: 'Exam Configuration', icon: <FiFileText /> }
     ] : []),
   ]
@@ -187,8 +171,7 @@ export default function SettingsPage() {
 
   const handleClassSave = () => {
     const updated = [...classes, { class: newClass.name, sections: newClass.sections, subjects: ['English', 'Hindi', 'Mathematics', 'Science', 'Social Sc.'] }]
-    setClasses(updated)
-    localStorage.setItem(`nms_classes_${currentSession}`, JSON.stringify(updated))
+    updateClasses(updated)
     setAddClassModal(false)
     setNewClass({ name: '', sections: [{ name: 'A', teacher: '' }], subjects: [] })
   }
@@ -196,8 +179,7 @@ export default function SettingsPage() {
   const deleteClass = (idx) => {
     if (window.confirm('Are you sure you want to delete this class?')) {
       const updated = classes.filter((_, i) => i !== idx)
-      setClasses(updated)
-      localStorage.setItem(`nms_classes_${currentSession}`, JSON.stringify(updated))
+      updateClasses(updated)
     }
   }
 
@@ -205,10 +187,10 @@ export default function SettingsPage() {
     const subject = newSubjectInput[classIdx]?.trim()
     if (!subject) return
     const updated = [...classes]
+    if (!updated[classIdx].subjects) updated[classIdx].subjects = []
     if (!updated[classIdx].subjects.includes(subject)) {
       updated[classIdx].subjects.push(subject)
-      setClasses(updated)
-      localStorage.setItem(`nms_classes_${currentSession}`, JSON.stringify(updated))
+      updateClasses(updated)
     }
     setNewSubjectInput({ ...newSubjectInput, [classIdx]: '' })
   }
@@ -216,8 +198,21 @@ export default function SettingsPage() {
   const removeSubjectFromClass = (classIdx, subjectIdx) => {
     const updated = [...classes]
     updated[classIdx].subjects.splice(subjectIdx, 1)
-    setClasses(updated)
-    localStorage.setItem(`nms_classes_${currentSession}`, JSON.stringify(updated))
+    updateClasses(updated)
+  }
+
+  const handleRouteSave = () => {
+    const updated = [...transportRoutes, newRoute]
+    updateTransportRoutes(updated)
+    setAddRouteModal(false)
+    setNewRoute({ route: '', vehicle: '', driver: '', phone: '' })
+  }
+
+  const deleteRoute = (idx) => {
+    if (window.confirm('Are you sure you want to delete this route?')) {
+      const updated = transportRoutes.filter((_, i) => i !== idx)
+      updateTransportRoutes(updated)
+    }
   }
   const syncTransport = () => {
     if (!window.confirm(`Sync transport assignments for the CURRENT session (${currentSession})?`)) return
@@ -494,8 +489,6 @@ export default function SettingsPage() {
                   <button 
                     className="btn btn-secondary" 
                     onClick={() => {
-                      const updatedClasses = JSON.parse(localStorage.getItem(`nms_classes_${currentSession}`) || localStorage.getItem('nms_classes') || '[]');
-                      setClasses(updatedClasses);
                       alert('Fee structure synchronized with latest Classes and Transport Routes!');
                     }} 
                     title="Refresh the list of classes and routes from the database"
@@ -503,7 +496,12 @@ export default function SettingsPage() {
                     <FiRefreshCw /> Sync Structures
                   </button>
                   <button className="btn btn-secondary" onClick={syncFeesToAllStudents} title="Propagate these changes to all existing student records for the current session"><FiRefreshCw /> Recalculate All Students</button>
-                  <button className="btn btn-primary" onClick={handleGlobalFeeSave}>
+                  <button className="btn btn-primary" onClick={() => {
+                    localStorage.setItem(`erp_${schoolId}_global_fee_config`, JSON.stringify(globalFeeConfig))
+                    localStorage.setItem(`erp_${schoolId}_global_fee_config_${currentSession}`, JSON.stringify(globalFeeConfig))
+                    setFeeConfigSaved(true)
+                    setTimeout(() => setFeeConfigSaved(false), 3000)
+                  }}>
                     {feeConfigSaved ? <><FiCheckCircle /> Saved</> : <><FiSave /> Save Configuration</>}
                   </button>
                 </div>
@@ -537,7 +535,7 @@ export default function SettingsPage() {
                 {/* Transport Route Fees */}
                 <div>
                   <h4 style={{ fontWeight: 700, marginBottom: 15, paddingBottom: 10, borderBottom: '1px solid var(--gray-200)', color: 'var(--primary-600)' }}>Transport Location-wise Fee (₹)</h4>
-                  {JSON.parse(localStorage.getItem(`nms_transport_${currentSession}`) || localStorage.getItem('nms_transport') || '[]').map((route, i) => (
+                  {transportRoutes.map((route, i) => (
                     <div key={i} style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 12 }}>
                       <label style={{ fontSize: 14, fontWeight: 600, color: 'var(--gray-700)', width: 140, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }} title={route.route}>
                         {route.route}
@@ -549,8 +547,8 @@ export default function SettingsPage() {
                       />
                     </div>
                   ))}
-                  {JSON.parse(localStorage.getItem(`nms_transport_${currentSession}`) || localStorage.getItem('nms_transport') || '[]').length === 0 && (
-                    <div style={{ color: 'var(--gray-400)', fontSize: 13, fontStyle: 'italic' }}>No transport routes configured. Add routes in the Transport module first.</div>
+                  {transportRoutes.length === 0 && (
+                    <div style={{ color: 'var(--gray-400)', fontSize: 13, fontStyle: 'italic' }}>No transport routes configured. Add routes in the "Transport Routes" tab first.</div>
                   )}
                 </div>
               </div>
@@ -696,6 +694,68 @@ export default function SettingsPage() {
                     <div style={{ display: 'flex', gap: 12, marginTop: 20 }}>
                       <button className="btn btn-primary" style={{ flex: 1 }} onClick={handleClassSave}>Save Class</button>
                       <button className="btn btn-secondary" onClick={() => setAddClassModal(false)}>Cancel</button>
+                    </div>
+                  </div>
+                </div>
+              )}
+            </div>
+          )}
+
+          {/* ── TRANSPORT ROUTES TAB ── */}
+          {activeTab === 'transport' && isAdmin && (
+            <div style={{ padding: 'var(--space-6)' }}>
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 24 }}>
+                <div>
+                  <h3 style={{ fontWeight: 700, fontSize: 'var(--text-lg)', marginBottom: 6 }}>Transport Route Management</h3>
+                  <p style={{ fontSize: 'var(--text-sm)', color: 'var(--gray-500)' }}>
+                    Add and manage transport routes and assign vehicles/drivers.
+                  </p>
+                </div>
+                <button className="btn btn-primary" onClick={() => setAddRouteModal(true)}>
+                  <FiPlus /> Add New Route
+                </button>
+              </div>
+
+              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(300px, 1fr))', gap: 20 }}>
+                {transportRoutes.map((r, i) => (
+                  <div key={i} className="dash-widget" style={{ padding: 15, border: '1px solid var(--gray-100)' }}>
+                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 15 }}>
+                      <div>
+                        <div style={{ fontWeight: 800, color: 'var(--primary-700)', fontSize: 16 }}>{r.route}</div>
+                        <div style={{ fontSize: 12, color: 'var(--gray-500)' }}>{r.vehicle} • {r.driver}</div>
+                      </div>
+                      <button className="btn btn-sm btn-secondary" style={{ color: 'var(--error)' }} onClick={() => deleteRoute(i)}><FiTrash2 size={14} /></button>
+                    </div>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: 8, fontSize: 13, color: 'var(--gray-600)' }}>
+                      <FiSmartphone size={14} /> {r.phone || 'No phone provided'}
+                    </div>
+                  </div>
+                ))}
+              </div>
+
+              {addRouteModal && (
+                <div style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.5)', zIndex: 9999, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 20 }} onClick={() => setAddRouteModal(false)}>
+                  <div style={{ background: 'white', borderRadius: 20, padding: 32, maxWidth: 500, width: '100%' }} onClick={e => e.stopPropagation()}>
+                    <h3 style={{ fontWeight: 700, marginBottom: 20 }}>Add New Route</h3>
+                    <div className="form-group">
+                      <label className="form-label">Route/Location Name</label>
+                      <input className="form-input" placeholder="e.g. Sector 12, Main Market" value={newRoute.route} onChange={e => setNewRoute({...newRoute, route: e.target.value})} />
+                    </div>
+                    <div className="form-group">
+                      <label className="form-label">Vehicle Number</label>
+                      <input className="form-input" placeholder="e.g. MH 12 AB 1234" value={newRoute.vehicle} onChange={e => setNewRoute({...newRoute, vehicle: e.target.value})} />
+                    </div>
+                    <div className="form-group">
+                      <label className="form-label">Driver Name</label>
+                      <input className="form-input" placeholder="Enter driver name" value={newRoute.driver} onChange={e => setNewRoute({...newRoute, driver: e.target.value})} />
+                    </div>
+                    <div className="form-group">
+                      <label className="form-label">Driver Phone</label>
+                      <input className="form-input" placeholder="Enter phone number" value={newRoute.phone} onChange={e => setNewRoute({...newRoute, phone: e.target.value})} />
+                    </div>
+                    <div style={{ display: 'flex', gap: 12, marginTop: 20 }}>
+                      <button className="btn btn-primary" style={{ flex: 1 }} onClick={handleRouteSave}>Save Route</button>
+                      <button className="btn btn-secondary" onClick={() => setAddRouteModal(false)}>Cancel</button>
                     </div>
                   </div>
                 </div>
