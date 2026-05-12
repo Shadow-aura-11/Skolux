@@ -655,7 +655,10 @@ export default function StudentsPage() {
                <div style={{background:idConfig.themeColor, color:'white', padding:'15px'}}>
                  <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 10 }}>
                    {certConfig.logoImage && <img src={certConfig.logoImage} style={{ height: 35, width: 35, objectFit: 'contain' }} />}
-                   <div style={{fontSize:14, fontWeight:900, letterSpacing:0.5, lineHeight: 1.2, textAlign: 'left'}}>{idConfig.schoolName}</div>
+                   <div style={{fontSize:14, fontWeight:900, letterSpacing:0.5, lineHeight: 1.2, textAlign: 'left'}}>
+                     <div>{idConfig.schoolName}</div>
+                     <div style={{ fontSize: 7, fontWeight: 500, opacity: 0.8 }}>{certConfig.affiliation}</div>
+                   </div>
                  </div>
                  <div style={{fontSize:8, marginTop:8, background:'white', color:idConfig.themeColor, display:'inline-block', padding:'2px 10px', borderRadius:100, fontWeight:800}}>STUDENT IDENTITY CARD</div>
                </div>
@@ -716,8 +719,8 @@ export default function StudentsPage() {
                   <div style={{ textAlign: 'center', marginBottom: 30 }}>
                     {certConfig.showLogo && certConfig.logoImage && <img src={certConfig.logoImage} style={{ width: 80, height: 80, objectFit: 'contain', margin: '0 auto 15px', display: 'block' }} />}
                     <h1 style={{ fontSize: 32, fontWeight: 900, color: 'var(--primary-800)', textTransform: 'uppercase' }}>{certConfig.schoolName || 'NEW MORNING STAR PUBLIC SCHOOL'}</h1>
-                    <p style={{ fontSize: 14, color: 'var(--gray-600)' }}>Affiliated to Central Board of Secondary Education (CBSE)</p>
-                    <p style={{ fontSize: 12, color: 'var(--gray-500)' }}>{certConfig.address} | Email: {certConfig.email} | Phone: {certConfig.phone}</p>
+                    <p style={{ fontSize: 14, color: 'var(--gray-600)' }}>{certConfig.affiliation || 'Affiliated to CBSE'}</p>
+                    <p style={{ fontSize: 12, color: 'var(--gray-500)' }}>{certConfig.established ? `(${certConfig.established}) | ` : ''}{certConfig.address} | Email: {certConfig.email} | Phone: {certConfig.phone}</p>
                     <div style={{ borderBottom: '2px solid var(--primary-600)', margin: '15px 0' }} />
                     <h2 style={{ fontSize: 24, fontWeight: 800, textTransform: 'uppercase', letterSpacing: 2, display: 'inline-block', border: '2px solid var(--primary-800)', padding: '5px 20px', borderRadius: 4 }}>TRANSFER CERTIFICATE</h2>
                   </div>

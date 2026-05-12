@@ -36,17 +36,12 @@ export default function SettingsPage() {
   const [certConfig, setCertConfig] = useState(() => {
     const saved = localStorage.getItem(`erp_${schoolId}_cert_config`)
     return saved ? JSON.parse(saved) : {
-      schoolName: 'New Morning Star Public School',
-      address: 'Main Road, Sector 4, City - 123456',
+      schoolName: 'NEW MORNING STAR PUBLIC SCHOOL',
+      address: 'Subhash Nagar, New Delhi',
       phone: '+91 98765 43210',
-      email: 'info@morningstar.edu',
-      borderColor: '#4f46e5',
-      headerColor: '#1e1b4b',
-      showLogo: true,
-      showPhoto: true,
-      showSign: true,
-      watermark: 'OFFICIAL',
-      theme: 'classic',
+      email: 'info@nmsps.edu.in',
+      affiliation: 'Affiliated to CBSE (1234567)',
+      established: 'Est. 1995',
       idCardFormat: 'Modern',
       reportCardFormat: 'Detailed',
       tcFormat: 'Standard',
@@ -54,7 +49,10 @@ export default function SettingsPage() {
       logoImage: null,
       signImage: null,
       qrImage: null,
-      contentMarginTop: 0
+      contentMarginTop: 0,
+      showLogo: true,
+      showSign: true,
+      themeColor: '#4f46e5'
     }
   })
 
@@ -473,6 +471,16 @@ export default function SettingsPage() {
                   <div className="form-group">
                     <label className="form-label">Email Address</label>
                     <input className="form-input" value={certConfig.email} onChange={e => setCertConfig({...certConfig, email: e.target.value})} />
+                  </div>
+                </div>
+                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 15 }}>
+                  <div className="form-group">
+                    <label className="form-label">Affiliation Info</label>
+                    <input className="form-input" value={certConfig.affiliation} onChange={e => setCertConfig({...certConfig, affiliation: e.target.value})} placeholder="e.g. Affiliated to CBSE" />
+                  </div>
+                  <div className="form-group">
+                    <label className="form-label">Est. Year / Tagline</label>
+                    <input className="form-input" value={certConfig.established} onChange={e => setCertConfig({...certConfig, established: e.target.value})} placeholder="e.g. Est. 1995" />
                   </div>
                 </div>
 

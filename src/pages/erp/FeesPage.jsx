@@ -10,6 +10,7 @@ export default function FeesPage() {
   const { user, currentSession, sessions } = useAuth()
   const { schoolId } = useParams()
   const { students, refreshData, classes = [], transportRoutes = [] } = useData()
+  const certConfig = JSON.parse(localStorage.getItem(`erp_${schoolId}_cert_config`) || '{}')
 
   const syncFees = () => {
     if (!window.confirm(`Recalculate all fee balances for the CURRENT session (${currentSession})? This will fix any balance discrepancies across all students.`)) return
@@ -572,8 +573,9 @@ export default function FeesPage() {
           <div style={{ background: 'white', padding: 40, maxWidth: 600, width: '100%' }} onClick={e => e.stopPropagation()}>
             <div id="receipt-print-area" style={{ background: 'white !important', color: '#1e293b !important', boxShadow: 'inset 0 0 0 1000px white !important' }}>
               <div style={{ borderBottom: '2px solid #1e293b', paddingBottom: 20, marginBottom: 30, textAlign: 'center' }}>
-                <h1 style={{ fontSize: 22, fontWeight: 800, color: '#1e40af !important' }}>NEW MORNING STAR PUBLIC SCHOOL</h1>
-                <p style={{ fontSize: 12, color: '#64748b !important', marginTop: 4 }}>Subhash Nagar, New Delhi - 110027 | +91 11 2345 6789</p>
+                {certConfig.logoImage && <img src={certConfig.logoImage} style={{ height: 50, marginBottom: 10, display: 'block', margin: '0 auto' }} />}
+                <h1 style={{ fontSize: 22, fontWeight: 800, color: '#1e40af !important' }}>{certConfig.schoolName || 'NEW MORNING STAR PUBLIC SCHOOL'}</h1>
+                <p style={{ fontSize: 12, color: '#64748b !important', marginTop: 4 }}>{certConfig.address} | {certConfig.phone}</p>
                 <div style={{ display: 'inline-block', padding: '4px 15px', background: '#1e293b !important', boxShadow: 'inset 0 0 0 1000px #1e293b !important', color: 'white !important', fontSize: 11, fontWeight: 700, marginTop: 15, borderRadius: 4, WebkitPrintColorAdjust: 'exact' }}>FEE RECEIPT</div>
               </div>
               <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 30, marginBottom: 25 }}>

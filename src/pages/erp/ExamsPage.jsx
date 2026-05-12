@@ -290,8 +290,9 @@ export default function ExamsPage() {
             <div id="report-card-printable" style={{ padding: 40, border: '10px solid var(--primary-600)', minHeight: 800, background: certConfig.bgImage ? `url(${certConfig.bgImage}) no-repeat center/100% 100%` : 'white' }}>
               <div style={{ textAlign: 'center', marginBottom: 30 }}>
                 {certConfig.logoImage && <img src={certConfig.logoImage} style={{ height: 60, marginBottom: 10 }} />}
-                <h1 style={{ fontSize: 26, fontWeight: 900, color: 'var(--primary-800)', textTransform: 'uppercase' }}>{certConfig.schoolName}</h1>
-                <p style={{ fontSize: 12, color: 'var(--gray-500)' }}>{certConfig.address}</p>
+                <h1 style={{ fontSize: 32, fontWeight: 900, color: 'var(--primary-800)', textTransform: 'uppercase' }}>{certConfig.schoolName || 'NEW MORNING STAR PUBLIC SCHOOL'}</h1>
+                <p style={{ fontSize: 14, color: 'var(--gray-600)' }}>{certConfig.affiliation || 'Affiliated to CBSE'}</p>
+                <p style={{ fontSize: 12, color: 'var(--gray-500)' }}>{certConfig.established ? `(${certConfig.established}) | ` : ''}{certConfig.address} | Email: {certConfig.email} | Phone: {certConfig.phone}</p>
                 <div style={{ borderBottom: '2px solid var(--primary-100)', margin: '15px 0' }} />
                 <h2 style={{ fontSize: 18, fontWeight: 700, textTransform: 'uppercase', letterSpacing: 2 }}>{selectedExam} Report Card</h2>
               </div>
