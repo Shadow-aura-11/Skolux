@@ -816,8 +816,7 @@ export default function StudentsPage() {
               <label className="form-label">Promote to Class (Next Stage)</label>
               <select className="form-select" value={targetClass} onChange={e => setTargetClass(e.target.value)}>
                 <option value="">Auto (Next Class)</option>
-                <option value="UKG">UKG</option>
-                {['1st', '2nd', '3rd', '4th', '5th', '6th', '7th', '8th', '9th', '10th'].map(c => <option key={c} value={c}>Class {c}</option>)}
+                {globalClasses.map(c => <option key={c.class} value={c.class}>Class {c.class}</option>)}
               </select>
             </div>
 
@@ -829,7 +828,11 @@ export default function StudentsPage() {
 
             <button className="btn btn-primary w-full" onClick={() => {
               if (!targetSession) return alert('Please select target session')
-              const nextClassMap = { 'UKG': '1st', '1st': '2nd', '2nd': '3rd', '3rd': '4th', '4th': '5th', '5th': '6th', '6th': '7th', '7th': '8th', '8th': '9th', '9th': '10th', '10th': 'ALUMNI' }
+              const nextClassMap = {}
+              globalClasses.forEach((c, idx) => {
+                if (idx < globalClasses.length - 1) nextClassMap[c.class] = globalClasses[idx+1].class
+                else nextClassMap[c.class] = 'ALUMNI'
+              })
               const currentFees = JSON.parse(localStorage.getItem(feeKey(currentSession)) || '{}')
               const nextFees = JSON.parse(localStorage.getItem(feeKey(targetSession)) || '{}')
               

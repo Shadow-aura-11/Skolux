@@ -12,8 +12,8 @@ export default function AttendancePage() {
   const [selectedSection, setSelectedSection] = useState('A')
   const [viewMonth, setViewMonth] = useState(new Date())
   
-  const { students, attendance, holidays, updateHolidays } = useData()
-  const classList = ['UKG', '1st', '2nd', '3rd', '4th', '5th', '6th', '7th', '8th', '9th', '10th']
+  const { students, attendance, holidays, updateHolidays, classes } = useData()
+  const classList = classes.map(c => c.class)
   
   const formatDate = (date) => {
     const year = date.getFullYear()

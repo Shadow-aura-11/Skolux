@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react'
 import { useAuth, MOCK_DATA, getSessionStore, saveSessionStore } from '../../context/AuthContext'
 import { FiCalendar, FiEdit3, FiSave, FiX, FiPlus, FiFilter, FiDownload, FiInfo } from 'react-icons/fi'
+import { useData } from '../../context/DataContext'
 
 const subColors = { 
   Physics:'#3b82f6', Mathematics:'#8b5cf6', English:'#ec4899', Hindi:'#f97316', 
@@ -16,6 +17,8 @@ export default function TimetablePage() {
   const isAdmin = user?.role === 'admin'
   const isTeacher = user?.role === 'teacher'
   const canEdit = isAdmin || isTeacher
+  const { classes: erpClasses = [] } = useData() || {}
+  const classes = erpClasses.length > 0 ? erpClasses.map(c => c.class) : ['UKG', '1st', '2nd', '3rd', '4th', '5th', '6th', '7th', '8th', '9th', '10th']
 
   const [selectedClass, setSelectedClass] = useState('10th')
   const [selectedSection, setSelectedSection] = useState('-')
@@ -106,7 +109,7 @@ export default function TimetablePage() {
           <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
             <span style={{ fontSize: 13, color: 'var(--gray-600)' }}>Class:</span>
             <select className="form-select" style={{ width: 100 }} value={selectedClass} onChange={e => { setSelectedClass(e.target.value); setIsEditing(false); }}>
-              {['UKG', '1st', '2nd', '3rd', '4th', '5th', '6th', '7th', '8th', '9th', '10th'].map(cls => <option key={cls} value={cls}>{cls}</option>)}
+              {classes.map(cls => <option key={cls} value={cls}>{cls}</option>)}
             </select>
           </div>
 

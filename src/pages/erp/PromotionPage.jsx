@@ -10,7 +10,7 @@ export default function PromotionPage() {
   const { schoolId } = useParams()
   const isAdmin = user?.role === 'admin'
   
-  const { students, updateStudents } = useData()
+  const { students, updateStudents, classes: erpClasses = [] } = useData()
 
   const [fromClass, setFromClass] = useState('9th')
   const [fromSection, setFromSection] = useState('A')
@@ -21,7 +21,7 @@ export default function PromotionPage() {
   const [promotionResults, setPromotionResults] = useState([]) // Array of {id, action: 'promote' | 'fail'}
   const [destSession, setDestSession] = useState('')
 
-  const classes = ['UKG', '1st', '2nd', '3rd', '4th', '5th', '6th', '7th', '8th', '9th', '10th']
+  const classes = erpClasses.length > 0 ? erpClasses.map(c => c.class) : ['UKG', '1st', '2nd', '3rd', '4th', '5th', '6th', '7th', '8th', '9th', '10th']
   
   // Initialize destSession to next session if available
   useMemo(() => {

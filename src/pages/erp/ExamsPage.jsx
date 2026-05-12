@@ -10,7 +10,7 @@ export default function ExamsPage() {
   const { user, currentSession } = useAuth()
   const navigate = useNavigate()
   const { schoolId } = useParams()
-  const { marks: marksData, updateMarks, students = [] } = useData() || {}
+  const { marks: marksData, updateMarks, students = [], classes: erpClasses = [] } = useData() || {}
   const isAdmin = user?.role === 'admin'
   const isTeacher = user?.role === 'teacher'
   const isStudent = user?.role === 'student'
@@ -47,7 +47,7 @@ export default function ExamsPage() {
     return JSON.parse(localStorage.getItem(`erp_${schoolId}_classes_${currentSession}`) || localStorage.getItem(`erp_${schoolId}_classes`) || '[]')
   }, [currentSession, schoolId])
 
-  const classes = globalClasses.length > 0 ? globalClasses.map(c => c.class) : ['UKG', '1st', '2nd', '3rd', '4th', '5th', '6th', '7th', '8th', '9th', '10th']
+  const classes = globalClasses.length > 0 ? globalClasses.map(c => c.class) : (erpClasses.length > 0 ? erpClasses.map(c => c.class) : ['UKG', '1st', '2nd', '3rd', '4th', '5th', '6th', '7th', '8th', '9th', '10th'])
   const selectedClassObj = globalClasses.find(c => c.class === selectedClass)
   const sections = ['-', ...(selectedClassObj ? selectedClassObj.sections.map(s => s.name) : ['A', 'B', 'C', 'D'])]
   const subjects = selectedClassObj?.subjects || ['English', 'Hindi', 'Mathematics', 'Science', 'Social Sc.']

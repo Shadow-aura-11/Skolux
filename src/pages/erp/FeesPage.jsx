@@ -9,7 +9,7 @@ import { generatePDF } from '../../utils/pdfUtils'
 export default function FeesPage() {
   const { user, currentSession, sessions } = useAuth()
   const { schoolId } = useParams()
-  const { students, refreshData } = useData()
+  const { students, refreshData, classes = [], transportRoutes = [] } = useData()
 
   const syncFees = () => {
     if (!window.confirm(`Recalculate all fee balances for the CURRENT session (${currentSession})? This will fix any balance discrepancies across all students.`)) return
@@ -288,12 +288,12 @@ export default function FeesPage() {
               <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 8 }}>
                 <select className="form-select form-select-sm" value={filterClass} onChange={e => setFilterClass(e.target.value)}>
                   <option value="">All Classes</option>
-                  {['UKG', '1st', '2nd', '3rd', '4th', '5th', '6th', '7th', '8th', '9th', '10th'].map(c => <option key={c} value={c}>{c}</option>)}
+                  {classes.map(c => <option key={c.class} value={c.class}>Class {c.class}</option>)}
                 </select>
                 <select className="form-select form-select-sm" value={filterTransport} onChange={e => setFilterTransport(e.target.value)}>
                   <option value="">All Routes</option>
                   <option value="None">Self (None)</option>
-                  {Object.keys(globalFeeConfig.transportFees || {}).map(route => <option key={route} value={route}>{route}</option>)}
+                  {transportRoutes.map(r => <option key={r.route} value={r.route}>{r.route}</option>)}
                 </select>
               </div>
               <select className="form-select form-select-sm" value={filterPaidPct} onChange={e => setFilterPaidPct(e.target.value)} style={{ width: '100%' }}>

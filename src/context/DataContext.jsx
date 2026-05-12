@@ -66,7 +66,17 @@ export function DataProvider({ children }) {
 
         // Fetch Transport
         const serverRoutes = await api.get('transport', currentSession)
-        setTransportRoutes(Array.isArray(serverRoutes) ? serverRoutes : [])
+        let finalRoutes = []
+        if (Array.isArray(serverRoutes) && serverRoutes.length > 0) {
+          finalRoutes = serverRoutes
+        } else {
+          finalRoutes = JSON.parse(localStorage.getItem(getStoreKey('transport', currentSession)) || localStorage.getItem(getStoreKey('transport')) || '[]')
+        }
+        if (finalRoutes.length === 0) {
+          finalRoutes = [{ route: 'Route 1', vehicle: 'Bus 01', driver: 'Driver A', phone: '9876543210' }]
+          localStorage.setItem(getStoreKey('transport'), JSON.stringify(finalRoutes))
+        }
+        setTransportRoutes(finalRoutes)
 
         // Fetch Expenses & Fleet
         const serverExpenses = await api.get('expenses', currentSession)
@@ -80,12 +90,21 @@ export function DataProvider({ children }) {
 
         // Fetch Classes
         const serverClasses = await api.get('classes', currentSession)
-        if (Array.isArray(serverClasses)) {
-          setClasses(serverClasses)
+        let finalClasses = []
+        if (Array.isArray(serverClasses) && serverClasses.length > 0) {
+          finalClasses = serverClasses
         } else {
-          const localClasses = JSON.parse(localStorage.getItem(getStoreKey('classes', currentSession)) || localStorage.getItem(getStoreKey('classes')) || '[]')
-          setClasses(localClasses)
+          finalClasses = JSON.parse(localStorage.getItem(getStoreKey('classes', currentSession)) || localStorage.getItem(getStoreKey('classes')) || '[]')
         }
+        if (finalClasses.length === 0) {
+          finalClasses = [
+            { class: 'UKG', sections: [{ name: 'A', strength: 30 }], subjects: ['English', 'Hindi', 'Math'] },
+            { class: '1st', sections: [{ name: 'A', strength: 30 }], subjects: ['English', 'Hindi', 'Math'] },
+            { class: '2nd', sections: [{ name: 'A', strength: 30 }], subjects: ['English', 'Hindi', 'Math'] }
+          ]
+          localStorage.setItem(getStoreKey('classes'), JSON.stringify(finalClasses))
+        }
+        setClasses(finalClasses)
       } catch (error) {
         console.error("Data loading failed:", error)
       } finally {

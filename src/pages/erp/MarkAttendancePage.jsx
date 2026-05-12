@@ -8,12 +8,12 @@ export default function MarkAttendancePage() {
   const [selectedClass, setSelectedClass] = useState('')
   const [selectedSection, setSelectedSection] = useState('A')
   
-  const { students, attendance, updateAttendance } = useData()
+  const { students, attendance, updateAttendance, classes: erpClasses = [] } = useData()
 
   const [localAttendance, setLocalAttendance] = useState({}) // { studentId: 'Present' | 'Absent' | 'Late' }
   const [savedStatus, setSavedStatus] = useState(false)
 
-  const classes = ['UKG', '1st', '2nd', '3rd', '4th', '5th', '6th', '7th', '8th', '9th', '10th']
+  const classes = erpClasses.length > 0 ? erpClasses.map(c => c.class) : ['UKG', '1st', '2nd', '3rd', '4th', '5th', '6th', '7th', '8th', '9th', '10th']
   
   const formatDate = (date) => {
     const year = date.getFullYear()
