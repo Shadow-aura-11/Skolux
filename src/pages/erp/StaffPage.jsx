@@ -19,7 +19,9 @@ export default function StaffPage() {
     id:'', name:'', dept:'', designation:'Teacher', status:'Present', phone:'',
     dob: '', bloodGroup: '', address: '', aadhaarNo: '', panNo: '', joinDate: '',
     photo: null,
-    documents: []
+    documents: [],
+    username: '',
+    password: ''
   })
 
   const [customDesignation, setCustomDesignation] = useState(false)
@@ -35,7 +37,8 @@ export default function StaffPage() {
     setEditData({
       id:`STF${String(staff.length+1).padStart(3,'0')}`, name:'', dept:'', designation:'Teacher', status:'Present', phone:'',
       dob: '', bloodGroup: '', address: '', aadhaarNo: '', panNo: '', joinDate: new Date().toISOString().split('T')[0],
-      photo: null, documents: []
+      photo: null, documents: [],
+      username: '', password: ''
     }); 
     setCustomDesignation(false)
     setModal('add') 
@@ -51,7 +54,9 @@ export default function StaffPage() {
       address: s.address || '',
       aadhaarNo: s.aadhaarNo || '',
       panNo: s.panNo || '',
-      joinDate: s.joinDate || ''
+      joinDate: s.joinDate || '',
+      username: s.username || '',
+      password: s.password || ''
     }); 
     setCustomDesignation(false)
     setModal('edit') 
@@ -261,6 +266,23 @@ export default function StaffPage() {
               <div className="form-group"><label className="form-label">Aadhaar Number</label><input className="form-input" value={editData.aadhaarNo} onChange={e=>setEditData({...editData,aadhaarNo:e.target.value})}/></div>
               <div className="form-group"><label className="form-label">PAN Number</label><input className="form-input" value={editData.panNo} onChange={e=>setEditData({...editData,panNo:e.target.value})}/></div>
               <div className="form-group"><label className="form-label">Date of Joining</label><input className="form-input" type="date" value={editData.joinDate} onChange={e=>setEditData({...editData,joinDate:e.target.value})}/></div>
+            </div>
+
+            <div style={{marginTop:30, padding:20, background:'var(--primary-50)', borderRadius:16, border:'1px solid var(--primary-100)'}}>
+              <h4 style={{fontSize:13, fontWeight:800, color:'var(--primary-700)', marginBottom:15, display:'flex', alignItems:'center', gap:8}}><FiShield /> Teacher Portal Credentials</h4>
+              <div style={{display:'grid', gridTemplateColumns:'1fr 1fr', gap:16}}>
+                <div className="form-group">
+                  <label className="form-label" style={{ color: 'var(--primary-600)' }}>Login Username</label>
+                  <input className="form-input" style={{ borderColor: 'var(--primary-200)' }} value={editData.username} onChange={e=>setEditData({...editData,username:e.target.value})} placeholder="Set portal username"/>
+                </div>
+                <div className="form-group">
+                  <label className="form-label" style={{ color: 'var(--primary-600)' }}>Login Password</label>
+                  <input className="form-input" style={{ borderColor: 'var(--primary-200)' }} type="text" value={editData.password} onChange={e=>setEditData({...editData,password:e.target.value})} placeholder="Set portal password"/>
+                </div>
+              </div>
+              <div style={{ fontSize: 11, color: 'var(--primary-500)', marginTop: 8, fontWeight: 600 }}>
+                💡 Tip: Use a unique username and strong password. Staff can use these to log into their specific teacher dashboard.
+              </div>
             </div>
 
             <div style={{marginTop:30, padding:20, background:'var(--gray-50)', borderRadius:16}}>

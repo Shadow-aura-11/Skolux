@@ -207,7 +207,27 @@ export const AuthProvider = ({ children }) => {
         return true
       }
 
-      // Teacher Check
+      // Teacher/Staff Check (Dynamic)
+      const staffKey = `erp_${school.key}_staff_global`
+      const staffList = JSON.parse(localStorage.getItem(staffKey) || '[]')
+      const staffFound = staffList.find(
+        s => s.username?.toLowerCase() === username.toLowerCase() && s.password === password
+      )
+
+      if (staffFound) {
+        setUser({
+          id: staffFound.id,
+          username: staffFound.username,
+          role: 'teacher',
+          name: staffFound.name,
+          designation: staffFound.designation,
+          avatar: staffFound.name?.[0] || 'T',
+          ...staffFound
+        })
+        return true
+      }
+
+      // Teacher Check (Legacy/Default)
       const schoolTeacherUser = school.teacherUsername || 'teacher'
       const schoolTeacherPass = school.teacherPassword || 'teacher123'
       if (u === schoolTeacherUser.toLowerCase() && password === schoolTeacherPass) {
