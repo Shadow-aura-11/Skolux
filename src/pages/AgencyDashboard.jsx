@@ -238,7 +238,7 @@ export default function AgencyDashboard() {
 
                   <div style={{ marginTop: 24, display: 'flex', gap: 12 }}>
                     <Link 
-                      to={`/${sub}/erp`} 
+                      to={`/${sub}/erp/dashboard`} 
                       target="_blank" 
                       rel="noreferrer"
                       style={{ flex: 1, textAlign: 'center', padding: '10px', background: '#f1f5f9', color: '#1e293b', borderRadius: 10, textDecoration: 'none', fontSize: 13, fontWeight: 700, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6 }}

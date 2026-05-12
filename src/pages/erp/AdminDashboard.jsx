@@ -11,7 +11,8 @@ import {
 import { exportToCSV } from '../../utils/exportUtils'
 
 export default function AdminDashboard() {
-  const { user, currentSession, updateSession, sessions } = useAuth()
+  const { user, currentSession, updateSession, sessions, school } = useAuth()
+  const prefix = `/${school?.key || 'nms'}/erp`
   const { 
     students = [], attendance = [], notices = [], feeStats = { collected: 0, pending: 0, overdue: 0 }, 
     generalExpenses = [], updateExpenses,
@@ -154,8 +155,8 @@ export default function AdminDashboard() {
             <FiRefreshCw style={{ animation: refreshing ? 'spin 1s linear infinite' : 'none' }} /> 
             {refreshing ? 'Refreshing...' : 'Refresh Dashboard'}
           </button>
-          <Link to="/erp/students" className="btn btn-primary btn-sm"><FiUserPlus /> Add Student</Link>
-          <Link to="/erp/notices" className="btn btn-secondary btn-sm"><FiBell /> New Notice</Link>
+          <Link to={`${prefix}/students`} className="btn btn-primary btn-sm"><FiUserPlus /> Add Student</Link>
+          <Link to={`${prefix}/notices`} className="btn btn-secondary btn-sm"><FiBell /> New Notice</Link>
         </div>
       </div>
       
@@ -181,12 +182,12 @@ export default function AdminDashboard() {
 
       {/* Quick Actions */}
       <div className="dash-quick-actions">
-        <Link to="/erp/attendance" className="dash-quick-btn"><FiClock /> View Attendance</Link>
-        <Link to="/erp/fees" className="dash-quick-btn"><FiDollarSign /> Fee Reports</Link>
-        <Link to="/erp/exams" className="dash-quick-btn"><FiFileText /> Exam Results</Link>
-        <Link to="/erp/transport" className="dash-quick-btn"><FiTruck /> Transport</Link>
-        <Link to="/erp/students" className="dash-quick-btn"><FiUsers /> All Students</Link>
-        <Link to="/web-admin" className="dash-quick-btn" style={{ background: 'var(--primary-50)', color: 'var(--primary-600)', borderColor: 'var(--primary-200)' }}><FiMonitor /> Website CMS</Link>
+        <Link to={`${prefix}/attendance`} className="dash-quick-btn"><FiClock /> View Attendance</Link>
+        <Link to={`${prefix}/fees`} className="dash-quick-btn"><FiDollarSign /> Fee Reports</Link>
+        <Link to={`${prefix}/exams`} className="dash-quick-btn"><FiFileText /> Exam Results</Link>
+        <Link to={`${prefix}/transport`} className="dash-quick-btn"><FiTruck /> Transport</Link>
+        <Link to={`${prefix}/students`} className="dash-quick-btn"><FiUsers /> All Students</Link>
+        <Link to={`/${school?.key}`} className="dash-quick-btn" style={{ background: 'var(--primary-50)', color: 'var(--primary-600)', borderColor: 'var(--primary-200)' }}><FiMonitor /> Website CMS</Link>
       </div>
 
       <div className="dash-widget-row">
@@ -197,7 +198,7 @@ export default function AdminDashboard() {
             <div style={{ display: 'flex', gap: 8 }}>
               <button className="btn btn-sm btn-secondary" onClick={() => setTransportModal(true)}><FiPlusCircle /> Add Log</button>
               <button className="btn btn-sm btn-secondary" style={{ width: 32, padding: 0 }} onClick={() => exportToCSV(fleetLogs, `Transport_Logs_${currentSession}.csv`)} title="Download Logs"><FiDownload /></button>
-              <Link to="/erp/transport" style={{ marginLeft: 8, fontSize: 'var(--text-sm)', color: 'var(--primary-500)', fontWeight: 600, display: 'flex', alignItems: 'center', gap: 4 }}>
+              <Link to={`${prefix}/transport`} style={{ marginLeft: 8, fontSize: 'var(--text-sm)', color: 'var(--primary-500)', fontWeight: 600, display: 'flex', alignItems: 'center', gap: 4 }}>
                 View All <FiArrowRight size={14} />
               </Link>
             </div>
@@ -297,7 +298,7 @@ export default function AdminDashboard() {
         <div className="dash-widget">
           <div className="dash-widget-header">
             <span className="dash-widget-title"><FiUsers /> Staff Status</span>
-            <Link to="/erp/staff" style={{ fontSize: 'var(--text-sm)', color: 'var(--primary-500)', fontWeight: 600 }}>View All</Link>
+            <Link to={`${prefix}/staff`} style={{ fontSize: 'var(--text-sm)', color: 'var(--primary-500)', fontWeight: 600 }}>View All</Link>
           </div>
           <div className="dash-widget-body" style={{ padding: 0 }}>
             {MOCK_DATA.staff.map((s, i) => (
@@ -320,7 +321,7 @@ export default function AdminDashboard() {
       <div className="dash-widget" style={{ marginTop: 'var(--space-5)' }}>
         <div className="dash-widget-header">
           <span className="dash-widget-title"><FiUsers /> Recent Students</span>
-          <Link to="/erp/students" style={{ fontSize: 'var(--text-sm)', color: 'var(--primary-500)', fontWeight: 600 }}>View All Students</Link>
+          <Link to={`${prefix}/students`} style={{ fontSize: 'var(--text-sm)', color: 'var(--primary-500)', fontWeight: 600 }}>View All Students</Link>
         </div>
         <div style={{ overflowX: 'auto' }}>
           <table className="table">
@@ -344,7 +345,7 @@ export default function AdminDashboard() {
                   </td>
                   <td><span className={`badge ${s.feeStatus === 'Paid' ? 'badge-success' : s.feeStatus === 'Partial' ? 'badge-warning' : 'badge-error'}`}>{s.feeStatus}</span></td>
                   <td>
-                    <Link to={`/erp/students?id=${s.id}`} className="btn btn-sm btn-secondary" style={{ padding: '4px 10px', fontSize: '11px', display: 'inline-flex', alignItems: 'center', gap: 4 }}>
+                    <Link to={`${prefix}/students?id=${s.id}`} className="btn btn-sm btn-secondary" style={{ padding: '4px 10px', fontSize: '11px', display: 'inline-flex', alignItems: 'center', gap: 4 }}>
                       <FiEye size={12} /> View
                     </Link>
                   </td>

@@ -111,9 +111,9 @@ export default function CertificateDesigner() {
             <p style={{ fontSize: 13, color: 'var(--primary-700)', marginBottom: 10 }}>
               Background templates, logos, and signatures are now managed globally.
             </p>
-            <a href="/erp/settings" style={{ fontSize: 13, fontWeight: 700, color: 'var(--primary-600)', display: 'flex', alignItems: 'center', gap: 5 }}>
+            <Link to={`${prefix}/settings`} style={{ fontSize: 13, fontWeight: 700, color: 'var(--primary-600)', display: 'flex', alignItems: 'center', gap: 5 }}>
               <FiLayout /> Go to Global Branding Settings
-            </a>
+            </Link>
           </div>
         </div>
 

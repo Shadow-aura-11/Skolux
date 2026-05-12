@@ -7,7 +7,8 @@ import {
 import { Link } from 'react-router-dom'
 
 export default function StudentDashboard() {
-  const { user, currentSession } = useAuth()
+  const { user, currentSession, school } = useAuth()
+  const prefix = `/${school?.key || 'nms'}/erp`
   const { students, attendance: globalAttendance, homework: globalHomework } = useData()
   const sessionStore = getSessionStore(currentSession)
   
@@ -142,7 +143,7 @@ export default function StudentDashboard() {
         <div className="dash-widget">
           <div className="dash-widget-header">
             <span className="dash-widget-title"><FiAward /> Recent Exam Results</span>
-            <Link to="/erp/exams" className="btn btn-sm btn-secondary" style={{ padding: '2px 8px', fontSize: 11 }}>View All</Link>
+            <Link to={`${prefix}/exams`} className="btn btn-sm btn-secondary" style={{ padding: '2px 8px', fontSize: 11 }}>View All</Link>
           </div>
           <div style={{ overflowX: 'auto' }}>
             <table className="table">

@@ -132,13 +132,14 @@ export const deleteSchoolConfig = (subdomain) => {
  * Format: domain.com/schoolId/erp
  */
 export const getActiveSchool = () => {
-  const pathParts = window.location.pathname.split('/').filter(p => p !== '');
+  const hashPath = window.location.hash.replace(/^#\/?/, '');
+  const pathParts = hashPath.split('/').filter(p => p !== '');
   const allConfigs = getAllSchools();
   
-  // Detect schoolId from the FIRST segment of the path
+  // Detect schoolId from the FIRST segment of the hash path
   let key = pathParts[0] || 'nms';
   
-  // If the first part is 'agency', 'api', or empty, default to nms or check params
+  // If the first part is 'agency', 'erp', or empty, default to nms or check params
   if (key === 'agency' || key === 'erp') {
     const searchParams = new URLSearchParams(window.location.search);
     const urlSchool = searchParams.get('school');
