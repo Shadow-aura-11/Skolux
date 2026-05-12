@@ -443,7 +443,6 @@ export default function StudentsPage() {
                 </div>
               )}
             </div>
-            </div>
           </div>
         </div>
       )}
@@ -490,7 +489,6 @@ export default function StudentsPage() {
                       <div className="form-group"><label>Student ID {selectedStudent ? '' : '(Auto)'}</label><input className="form-input" value={formData.admissionNo} readOnly={!selectedStudent} style={selectedStudent ? {} : { background: 'var(--gray-50)', cursor: 'not-allowed' }} /></div>
                       <div className="form-group"><label>Roll No</label><input className="form-input" value={formData.rollNo} onChange={e => setFormData({...formData, rollNo: e.target.value})} /></div>
                       <div className="form-group"><label>Adm. Date</label><input type="date" className="form-input" value={formData.admissionDate} onChange={e => setFormData({...formData, admissionDate: e.target.value})} /></div>
-                    </div>
                     </div>
                   </div>
 
