@@ -5,7 +5,7 @@ import { useParams } from 'react-router-dom'
 import {
   FiSettings, FiUser, FiLock, FiBell, FiShield,
   FiSave, FiCheckCircle, FiCalendar, FiAlertTriangle, FiRefreshCw, FiPlus, FiTrash2, FiDollarSign,
-  FiImage, FiLayout, FiUsers, FiEdit2, FiX, FiInfo, FiFileText, FiGrid, FiTruck
+  FiImage, FiLayout, FiUsers, FiEdit2, FiX, FiInfo, FiFileText, FiGrid, FiTruck, FiSmartphone
 } from 'react-icons/fi'
 
 export default function SettingsPage() {
@@ -86,7 +86,7 @@ export default function SettingsPage() {
   const isAdmin = user?.role === 'admin'
 
   const handleSave = (e) => {
-    e.preventDefault()
+    e?.preventDefault()
     const initials = formData.name.split(' ').map(n => n[0]).join('').slice(0, 2).toUpperCase()
     updateProfile({
       ...formData,
@@ -150,18 +150,15 @@ export default function SettingsPage() {
   }
 
   const syncFeesToAllStudents = () => {
-    if (!window.confirm('This will update the "Total Fees" for ALL students in the current session based on your new settings. Unpaid balances will be recalculated. Continue?')) return
-    
-    const studentsData = JSON.parse(localStorage.getItem(`erp_${schoolId}_students_${currentSession}`) || localStorage.getItem(`erp_${schoolId}_students`) || '[]')
+    if (!window.confirm('This will update the "Total Fees" for ALL students in the current session. Continue?')) return
+    const studentsData = JSON.parse(localStorage.getItem(`erp_${schoolId}_students_${currentSession}`) || '[]')
     const feeKeyStr = `erp_${schoolId}_fees_${currentSession}`
     const currentFees = JSON.parse(localStorage.getItem(feeKeyStr) || '{}')
-    
     studentsData.forEach(student => {
       const classFee = Number(globalFeeConfig.classFees[student.class] || 0)
       const transportFee = Number(globalFeeConfig.transportFees[student.transportRoute] || 0)
       const prevDues = Number(currentFees[student.id]?.prevSessionDues || 0)
       const newTotal = classFee + transportFee
-      
       const record = currentFees[student.id] || { paid: 0, discount: 0, history: [] }
       currentFees[student.id] = {
         ...record,
@@ -170,10 +167,8 @@ export default function SettingsPage() {
         remaining: (newTotal + prevDues) - (record.paid || 0) - (record.discount || 0)
       }
     })
-    
     localStorage.setItem(feeKeyStr, JSON.stringify(currentFees))
-    alert('Fees recalculated and synchronized for all students in this session!')
-    window.location.reload()
+    alert('Fees recalculated for all students!')
   }
 
   const handleClassSave = () => {
@@ -183,15 +178,7 @@ export default function SettingsPage() {
       sections: newClass.sections, 
       subjects: newClass.subjects.length > 0 ? newClass.subjects : ['English', 'Hindi', 'Mathematics', 'Science', 'Social Sc.'] 
     }
-    
-    let updated
-    if (editClassIdx !== null) {
-      updated = [...classes]
-      updated[editClassIdx] = classData
-    } else {
-      updated = [...classes, classData]
-    }
-    
+    let updated = editClassIdx !== null ? classes.map((c, i) => i === editClassIdx ? classData : c) : [...classes, classData]
     updateClasses(updated)
     setAddClassModal(false)
     setEditClassIdx(null)
@@ -207,8 +194,7 @@ export default function SettingsPage() {
 
   const deleteClass = (idx) => {
     if (window.confirm('Are you sure you want to delete this class?')) {
-      const updated = classes.filter((_, i) => i !== idx)
-      updateClasses(updated)
+      updateClasses(classes.filter((_, i) => i !== idx))
     }
   }
 
@@ -232,13 +218,7 @@ export default function SettingsPage() {
 
   const handleRouteSave = () => {
     if (!newRoute.route) return alert('Route name is required')
-    let updated
-    if (editRouteIdx !== null) {
-      updated = [...transportRoutes]
-      updated[editRouteIdx] = newRoute
-    } else {
-      updated = [...transportRoutes, newRoute]
-    }
+    let updated = editRouteIdx !== null ? transportRoutes.map((r, i) => i === editRouteIdx ? newRoute : r) : [...transportRoutes, newRoute]
     updateTransportRoutes(updated)
     setAddRouteModal(false)
     setEditRouteIdx(null)
@@ -253,73 +233,17 @@ export default function SettingsPage() {
 
   const deleteRoute = (idx) => {
     if (window.confirm('Are you sure you want to delete this route?')) {
-      const updated = transportRoutes.filter((_, i) => i !== idx)
-      updateTransportRoutes(updated)
+      updateTransportRoutes(transportRoutes.filter((_, i) => i !== idx))
     }
-  }
-  const syncTransport = () => {
-    if (!window.confirm(`Sync transport assignments for the CURRENT session (${currentSession})?`)) return
-    const stuKey = `erp_${schoolId}_students_${currentSession}`
-    const transKey = `erp_${schoolId}_transport_${currentSession}`
-    const students = JSON.parse(localStorage.getItem(stuKey) || localStorage.getItem(`erp_${schoolId}_students`) || '[]')
-    const routes = JSON.parse(localStorage.getItem(transKey) || localStorage.getItem(`erp_${schoolId}_transport`) || '[]')
-    const routeNames = routes.map(r => r.route)
-    students.forEach(s => {
-      if (s.transportRoute !== 'None' && !routeNames.includes(s.transportRoute)) s.transportRoute = 'None'
-    })
-    localStorage.setItem(stuKey, JSON.stringify(students))
-    alert(`Transport routes synchronized for ${currentSession}!`); window.location.reload()
-  }
-
-  const syncFees = () => {
-    if (!window.confirm(`Recalculate all fee balances for the CURRENT session (${currentSession})?`)) return
-    const feeKeyStr = `erp_${schoolId}_fees_${currentSession}`
-    const fees = JSON.parse(localStorage.getItem(feeKeyStr) || '{}')
-    Object.keys(fees).forEach(sid => {
-      const f = fees[sid]
-      f.remaining = (Number(f.total || 0) + Number(f.prevSessionDues || 0)) - Number(f.paid || 0) - Number(f.discount || 0)
-    })
-    localStorage.setItem(feeKeyStr, JSON.stringify(fees))
-    alert(`Financial records recalculated for ${currentSession}!`); window.location.reload()
-  }
-
-  const syncStudents = () => {
-    if (!window.confirm(`Standardize student metadata for the CURRENT session (${currentSession})?`)) return
-    const stuKey = `erp_${schoolId}_students_${currentSession}`
-    const students = JSON.parse(localStorage.getItem(stuKey) || '[]')
-    students.forEach(s => {
-      s.name = s.name?.trim()
-      s.id = s.id?.toUpperCase()
-      if (!s.admissionDate) s.admissionDate = new Date().toISOString().split('T')[0]
-    })
-    localStorage.setItem(stuKey, JSON.stringify(students))
-    alert(`Student records standardized for ${currentSession}!`); window.location.reload()
   }
 
   const syncAcademic = () => {
-    if (!window.confirm('Sync class configurations with current session?')) return
+    if (!window.confirm('Sync class configurations?')) return
     const globalCls = JSON.parse(localStorage.getItem(`erp_${schoolId}_classes`) || '[]')
     localStorage.setItem(`erp_${schoolId}_classes_${currentSession}`, JSON.stringify(globalCls))
     alert('Academic classes synchronized!'); window.location.reload()
   }
 
-  const syncSessions = () => {
-    if (!window.confirm('Validate session continuity and carry-forward dues?')) return
-    // This logic ensures previous session dues are correctly mapped to next sessions
-    for (let i = 1; i < sessions.length; i++) {
-      const prevSession = sessions[i-1]
-      const nextSession = sessions[i]
-      const prevFees = JSON.parse(localStorage.getItem(`erp_${schoolId}_fees_${prevSession}`) || '{}')
-      const nextFees = JSON.parse(localStorage.getItem(`erp_${schoolId}_fees_${nextSession}`) || '{}')
-      Object.keys(nextFees).forEach(sid => {
-        if (prevFees[sid]) nextFees[sid].prevSessionDues = prevFees[sid].remaining
-      })
-      localStorage.setItem(`erp_${schoolId}_fees_${nextSession}`, JSON.stringify(nextFees))
-    }
-    alert('Session continuity validated!'); window.location.reload()
-  }
-
-  // Exam Handlers
   const saveExamData = (types, config) => {
     localStorage.setItem(`erp_${schoolId}_exam_types_${currentSession}`, JSON.stringify(types))
     localStorage.setItem(`erp_${schoolId}_exam_config_${currentSession}`, JSON.stringify(config))
@@ -329,16 +253,15 @@ export default function SettingsPage() {
 
   const handleAddExamType = () => {
     if (!newExamType.trim()) return
-    if (examTypes.includes(newExamType.trim().toUpperCase())) return
-    const updated = [...examTypes, newExamType.trim().toUpperCase()]
-    saveExamData(updated, examConfig)
+    const val = newExamType.trim().toUpperCase()
+    if (examTypes.includes(val)) return
+    saveExamData([...examTypes, val], examConfig)
     setNewExamType('')
   }
 
   const handleRemoveExamType = (type) => {
-    if (window.confirm(`Delete test type "${type}"?`)) {
-      const updated = examTypes.filter(t => t !== type)
-      saveExamData(updated, examConfig)
+    if (window.confirm(`Delete "${type}"?`)) {
+      saveExamData(examTypes.filter(t => t !== type), examConfig)
     }
   }
 
@@ -347,20 +270,358 @@ export default function SettingsPage() {
     saveExamData(examTypes, updated)
   }
 
-  const allExamSubjects = Array.from(new Set(classes.flatMap(c => c.subjects || []))).sort()
-  const currentExamClassObj = classes.find(c => c.class === examSelectedClass)
-  const currentClassSubjects = currentExamClassObj?.subjects || []
+  const renderTabContent = () => {
+    const adminTabs = ['session', 'fee-config', 'branding', 'classes', 'transport', 'exams']
+    if (adminTabs.includes(activeTab) && !isAdmin) {
+      return (
+        <div style={{ padding: 40, textAlign: 'center', color: 'var(--gray-400)' }}>
+          <FiShield size={48} style={{ marginBottom: 16, opacity: 0.5 }} />
+          <h3>Access Restricted</h3>
+          <p>You do not have permission to view these settings.</p>
+        </div>
+      )
+    }
 
+    switch (activeTab) {
+      case 'profile':
+        return (
+          <form onSubmit={handleSave} style={{ padding: 'var(--space-6)' }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 20, marginBottom: 30 }}>
+              <div style={{ width: 80, height: 80, borderRadius: '50%', background: 'var(--primary-100)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 24, fontWeight: 800, color: 'var(--primary-600)', overflow: 'hidden' }}>
+                {user?.photo ? (
+                  <img src={user.photo} style={{ width: '100%', height: '100%', objectFit: 'cover' }} alt="Profile" />
+                ) : (
+                  user?.name?.split(' ').map(n => n[0]).join('').slice(0, 2).toUpperCase()
+                )}
+              </div>
+              <div>
+                <label className="btn btn-secondary btn-sm" style={{ cursor: 'pointer' }}>
+                  Change Photo
+                  <input type="file" hidden accept="image/*" onChange={handleProfilePhoto} />
+                </label>
+                <div style={{ fontSize: 10, color: 'var(--gray-400)', marginTop: 8 }}>Recommended size: 400x400px</div>
+              </div>
+            </div>
+            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 20 }}>
+              <div className="form-group"><label className="form-label">Full Name</label><input className="form-input" value={formData.name} onChange={e => setFormData({ ...formData, name: e.target.value })} /></div>
+              <div className="form-group"><label className="form-label">Email Address</label><input className="form-input" type="email" value={formData.email} onChange={e => setFormData({ ...formData, email: e.target.value })} /></div>
+              <div className="form-group"><label className="form-label">Phone Number</label><input className="form-input" value={formData.phone} onChange={e => setFormData({ ...formData, phone: e.target.value })} /></div>
+              <div className="form-group"><label className="form-label">User ID</label><input className="form-input" value={user?.id} readOnly style={{ background: 'var(--gray-50)' }} /></div>
+            </div>
+            <div style={{ marginTop: 30, paddingTop: 20, borderTop: '1px solid var(--gray-100)', display: 'flex', alignItems: 'center', gap: 15 }}>
+              <button type="submit" className="btn btn-primary"><FiSave /> Save Changes</button>
+              {saved && <span style={{ fontSize: 'var(--text-sm)', color: 'var(--accent-600)', fontWeight: 600 }}><FiCheckCircle style={{ display: 'inline', marginRight: 4 }} />Saved!</span>}
+            </div>
+          </form>
+        )
+
+      case 'security':
+        return (
+          <form onSubmit={e => { e.preventDefault(); alert('Password update logic not implemented in demo.'); }} style={{ padding: 'var(--space-6)', maxWidth: 400 }}>
+            <div className="form-group"><label className="form-label">Current Password</label><input className="form-input" type="password" placeholder="••••••••" /></div>
+            <div className="form-group"><label className="form-label">New Password</label><input className="form-input" type="password" placeholder="••••••••" /></div>
+            <div className="form-group"><label className="form-label">Confirm New Password</label><input className="form-input" type="password" placeholder="••••••••" /></div>
+            <div style={{ marginTop: 20 }}><button type="submit" className="btn btn-primary"><FiSave /> Update Password</button></div>
+          </form>
+        )
+
+      case 'notifications':
+        return (
+          <div style={{ padding: 'var(--space-6)', display: 'flex', flexDirection: 'column', gap: 20 }}>
+            {[
+              { label: 'Email Notifications', desc: 'Receive updates on your registered email' },
+              { label: 'SMS Alerts', desc: 'Attendance and fee alerts via SMS' },
+              { label: 'Mobile App Push', desc: 'Instant notifications on your school app' },
+              { label: 'Circulars & Notices', desc: 'Get notified when a new notice is posted' },
+            ].map((n, i) => (
+              <div key={i} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                <div><div style={{ fontSize: 14, fontWeight: 600, color: 'var(--gray-700)' }}>{n.label}</div><div style={{ fontSize: 11, color: 'var(--gray-400)' }}>{n.desc}</div></div>
+                <label style={{ width: 44, height: 24, background: 'var(--primary-500)', borderRadius: 12, position: 'relative', cursor: 'pointer' }}>
+                  <div style={{ position: 'absolute', right: 2, top: 2, width: 20, height: 20, background: 'white', borderRadius: '50%' }} />
+                </label>
+              </div>
+            ))}
+          </div>
+        )
+
+      case 'privacy':
+        return (
+          <div style={{ padding: 'var(--space-6)', display: 'flex', flexDirection: 'column', gap: 24 }}>
+            <div style={{ borderBottom: '1px solid var(--gray-100)', paddingBottom: 15 }}>
+              <h3 style={{ fontWeight: 700, fontSize: 'var(--text-lg)' }}>Privacy & Data Controls</h3>
+              <p style={{ fontSize: 13, color: 'var(--gray-500)' }}>Manage how your data is shared and who can see your profile.</p>
+            </div>
+            {[
+              { label: 'Public Profile', desc: 'Allow other students/parents to see your name and photo', active: true },
+              { label: 'Show Contact Info', desc: 'Display your phone and email to teachers and admin', active: true },
+              { label: 'Activity Logs', desc: 'Keep a record of your logins and actions for security', active: true },
+              { label: 'Third-party Analytics', desc: 'Share anonymous usage data to help improve the portal', active: false }
+            ].map((p, i) => (
+              <div key={i} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                <div style={{ flex: 1 }}>
+                  <div style={{ fontSize: 14, fontWeight: 700, color: 'var(--gray-800)' }}>{p.label}</div>
+                  <div style={{ fontSize: 12, color: 'var(--gray-500)' }}>{p.desc}</div>
+                </div>
+                <label style={{ width: 44, height: 24, background: p.active ? 'var(--primary-500)' : 'var(--gray-200)', borderRadius: 12, position: 'relative', cursor: 'pointer' }}>
+                  <div style={{ position: 'absolute', right: p.active ? 2 : 'auto', left: p.active ? 'auto' : 2, top: 2, width: 20, height: 20, background: 'white', borderRadius: '50%' }} />
+                </label>
+              </div>
+            ))}
+          </div>
+        )
+
+      case 'session':
+        return (
+          <div style={{ padding: 'var(--space-6)' }}>
+            <h3 style={{ fontWeight: 700, marginBottom: 20 }}>Academic Session Management</h3>
+            <div style={{ background: 'var(--primary-50)', border: '1px solid var(--primary-200)', borderRadius: 15, padding: 20, marginBottom: 24, display: 'flex', alignItems: 'center', gap: 12 }}>
+              <FiCalendar size={22} color="var(--primary-500)" />
+              <div><div style={{ fontSize: 11, color: 'var(--primary-500)', fontWeight: 600 }}>CURRENT SESSION</div><div style={{ fontSize: 22, fontWeight: 800, color: 'var(--primary-700)' }}>{currentSession}</div></div>
+              {sessionSaved && <div style={{ marginLeft: 'auto', color: 'var(--accent-600)', fontWeight: 600 }}><FiCheckCircle /> Updated!</div>}
+            </div>
+            <div className="form-group">
+              <label className="form-label">Change to Session</label>
+              <select className="form-select" value={selectedSession} onChange={e => { setSelectedSession(e.target.value); setShowConfirm(false) }}>
+                {allSessions.map(s => <option key={s} value={s}>{s}{s === currentSession ? ' (Active)' : ''}</option>)}
+              </select>
+            </div>
+            {selectedSession !== currentSession && (
+              <button className="btn btn-primary" onClick={() => setShowConfirm(true)}><FiRefreshCw /> Switch Session</button>
+            )}
+            {showConfirm && (
+              <div style={{ background: '#fffbeb', border: '1px solid #f59e0b', borderRadius: 15, padding: 20, marginTop: 15 }}>
+                <p style={{ fontSize: 13, color: '#92400e', marginBottom: 15 }}>Are you sure? This will switch the global context to {selectedSession}.</p>
+                <div style={{ display: 'flex', gap: 10 }}>
+                  <button className="btn btn-primary" style={{ background: '#d97706' }} onClick={handleSessionChange}>Yes, Switch</button>
+                  <button className="btn btn-secondary" onClick={() => setShowConfirm(false)}>Cancel</button>
+                </div>
+              </div>
+            )}
+          </div>
+        )
+
+      case 'fee-config':
+        return (
+          <div style={{ padding: 'var(--space-6)' }}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 24 }}>
+              <h3 style={{ fontWeight: 700 }}>Fee Configuration</h3>
+              <div style={{ display: 'flex', gap: 10 }}>
+                <button className="btn btn-secondary" onClick={syncFeesToAllStudents}><FiRefreshCw /> Recalculate All</button>
+                <button className="btn btn-primary" onClick={handleGlobalFeeSave}>{feeConfigSaved ? 'Saved!' : 'Save Structure'}</button>
+              </div>
+            </div>
+            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 30 }}>
+              <div>
+                <h4 style={{ fontWeight: 700, marginBottom: 15, color: 'var(--primary-600)' }}>Class Fees (₹)</h4>
+                {classes.map(c => (
+                  <div key={c.class} style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 10 }}>
+                    <label style={{ fontSize: 13, fontWeight: 600 }}>Class {c.class}</label>
+                    <input type="number" className="form-input" style={{ width: 120 }} value={globalFeeConfig.classFees[c.class] || ''} onChange={e => setGlobalFeeConfig(prev => ({...prev, classFees: {...prev.classFees, [c.class]: e.target.value}}))} />
+                  </div>
+                ))}
+              </div>
+              <div>
+                <h4 style={{ fontWeight: 700, marginBottom: 15, color: 'var(--primary-600)' }}>Transport Fees (₹)</h4>
+                {transportRoutes.map((r, i) => (
+                  <div key={i} style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 10 }}>
+                    <label style={{ fontSize: 13, fontWeight: 600 }}>{r.route}</label>
+                    <input type="number" className="form-input" style={{ width: 120 }} value={globalFeeConfig.transportFees[r.route] || ''} onChange={e => setGlobalFeeConfig(prev => ({...prev, transportFees: {...prev.transportFees, [r.route]: e.target.value}}))} />
+                  </div>
+                ))}
+              </div>
+            </div>
+          </div>
+        )
+
+      case 'branding':
+        return (
+          <div style={{ padding: 'var(--space-6)' }}>
+            <h3 style={{ fontWeight: 700, marginBottom: 20 }}>Global Branding</h3>
+            <div style={{ display: 'grid', gridTemplateColumns: '1fr', gap: 20, maxWidth: 500 }}>
+              <div className="form-group">
+                <label className="form-label">Background Template</label>
+                <input type="file" className="form-input" accept="image/*" onChange={e => handleFileUpload(e, 'bgImage')} />
+                {certConfig.bgImage && <img src={certConfig.bgImage} style={{ height: 80, marginTop: 10, borderRadius: 8, border: '1px solid var(--gray-200)' }} />}
+              </div>
+              <div className="form-group">
+                <label className="form-label">School Logo</label>
+                <input type="file" className="form-input" accept="image/*" onChange={e => handleFileUpload(e, 'logoImage')} />
+                {certConfig.logoImage && <img src={certConfig.logoImage} style={{ height: 60, marginTop: 10 }} />}
+              </div>
+              <div className="form-group">
+                <label className="form-label">Principal Signature</label>
+                <input type="file" className="form-input" accept="image/*" onChange={e => handleFileUpload(e, 'signImage')} />
+                {certConfig.signImage && <img src={certConfig.signImage} style={{ height: 40, marginTop: 10 }} />}
+              </div>
+            </div>
+          </div>
+        )
+
+      case 'classes':
+        return (
+          <div style={{ padding: 'var(--space-6)' }}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 24 }}>
+              <h3 style={{ fontWeight: 700 }}>Class & Section Management</h3>
+              <div style={{ display: 'flex', gap: 10 }}>
+                <button className="btn btn-secondary" onClick={syncAcademic}><FiRefreshCw /> Sync</button>
+                <button className="btn btn-primary" onClick={() => setAddClassModal(true)}><FiPlus /> New Class</button>
+              </div>
+            </div>
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(280px, 1fr))', gap: 20 }}>
+              {classes.map((c, i) => (
+                <div key={i} style={{ background: 'var(--primary-50)', padding: 15, borderRadius: 15, border: '1px solid var(--primary-100)' }}>
+                  <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 15 }}>
+                    <span style={{ fontWeight: 800, color: 'var(--primary-700)' }}>Class {c.class}</span>
+                    <div style={{ display: 'flex', gap: 8 }}>
+                      <button className="btn btn-sm" onClick={() => openEditClass(i)}><FiEdit2 size={12} /></button>
+                      <button className="btn btn-sm" style={{ color: 'var(--error)' }} onClick={() => deleteClass(i)}><FiTrash2 size={12} /></button>
+                    </div>
+                  </div>
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+                    {c.sections.map((sec, idx) => (
+                      <div key={idx} style={{ display: 'flex', justifyContent: 'space-between', padding: '6px 12px', background: 'white', borderRadius: 8, fontSize: 13 }}>
+                        <span style={{ fontWeight: 700 }}>Sec {sec.name}</span>
+                        <span style={{ color: 'var(--gray-500)' }}>{sec.teacher || 'No teacher'}</span>
+                      </div>
+                    ))}
+                  </div>
+                  <div style={{ marginTop: 15, borderTop: '1px solid var(--primary-100)', paddingTop: 10 }}>
+                    <div style={{ fontSize: 11, fontWeight: 700, color: 'var(--primary-600)', marginBottom: 8 }}>SUBJECTS</div>
+                    <div style={{ display: 'flex', flexWrap: 'wrap', gap: 5, marginBottom: 10 }}>
+                      {c.subjects?.map((sub, idx) => (
+                        <span key={idx} style={{ background: 'white', padding: '2px 8px', borderRadius: 6, fontSize: 10, display: 'flex', alignItems: 'center', gap: 4 }}>
+                          {sub} <FiX style={{ cursor: 'pointer', color: 'var(--error)' }} onClick={() => removeSubjectFromClass(i, idx)} />
+                        </span>
+                      ))}
+                    </div>
+                    <div style={{ display: 'flex', gap: 5 }}>
+                      <input className="form-input" style={{ height: 28, fontSize: 11, padding: '0 8px' }} placeholder="Add sub..." value={newSubjectInput[i] || ''} onChange={e => setNewSubjectInput({...newSubjectInput, [i]: e.target.value})} onKeyDown={e => e.key === 'Enter' && addSubjectToClass(i)} />
+                      <button className="btn btn-primary" style={{ height: 28, padding: '0 8px' }} onClick={() => addSubjectToClass(i)}><FiPlus size={12} /></button>
+                    </div>
+                  </div>
+                </div>
+              ))}
+            </div>
+            {addClassModal && (
+              <div style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.5)', zIndex: 9999, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 20 }} onClick={() => setAddClassModal(false)}>
+                <div style={{ background: 'white', borderRadius: 20, padding: 32, maxWidth: 500, width: '100%' }} onClick={e => e.stopPropagation()}>
+                  <h3 style={{ fontWeight: 700, marginBottom: 20 }}>{editClassIdx !== null ? 'Edit Class' : 'Add New Class'}</h3>
+                  <div className="form-group"><label className="form-label">Class Name</label><input className="form-input" value={newClass.name} onChange={e => setNewClass({...newClass, name: e.target.value})} /></div>
+                  <div className="form-group">
+                    <label className="form-label" style={{ display: 'flex', justifyContent: 'space-between' }}>Sections <button className="btn btn-sm" onClick={() => setNewClass({...newClass, sections: [...newClass.sections, { name: '', teacher: '' }]})}><FiPlus size={10} /></button></label>
+                    {newClass.sections.map((sec, idx) => (
+                      <div key={idx} style={{ display: 'flex', gap: 8, marginBottom: 8 }}>
+                        <input className="form-input" style={{ width: 60 }} placeholder="Sec" value={sec.name} onChange={e => { const u = [...newClass.sections]; u[idx].name = e.target.value; setNewClass({...newClass, sections: u}) }} />
+                        <input className="form-input" style={{ flex: 1 }} placeholder="Teacher" value={sec.teacher} onChange={e => { const u = [...newClass.sections]; u[idx].teacher = e.target.value; setNewClass({...newClass, sections: u}) }} />
+                        <button className="btn btn-sm" onClick={() => setNewClass({...newClass, sections: newClass.sections.filter((_,si)=>si!==idx)})}><FiTrash2 size={12} color="var(--error)"/></button>
+                      </div>
+                    ))}
+                  </div>
+                  <div style={{ display: 'flex', gap: 12, marginTop: 20 }}>
+                    <button className="btn btn-primary" style={{ flex: 1 }} onClick={handleClassSave}>Save</button>
+                    <button className="btn btn-secondary" onClick={() => setAddClassModal(false)}>Cancel</button>
+                  </div>
+                </div>
+              </div>
+            )}
+          </div>
+        )
+
+      case 'transport':
+        return (
+          <div style={{ padding: 'var(--space-6)' }}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 24 }}>
+              <h3 style={{ fontWeight: 700 }}>Transport Routes</h3>
+              <button className="btn btn-primary" onClick={() => setAddRouteModal(true)}><FiPlus /> New Route</button>
+            </div>
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(300px, 1fr))', gap: 20 }}>
+              {transportRoutes.map((r, i) => (
+                <div key={i} className="dash-widget" style={{ padding: 15, border: '1px solid var(--gray-100)' }}>
+                  <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 10 }}>
+                    <div><div style={{ fontWeight: 800, color: 'var(--primary-700)', fontSize: 16 }}>{r.route}</div><div style={{ fontSize: 12, color: 'var(--gray-500)' }}>{r.vehicle} • {r.driver}</div></div>
+                    <div style={{ display: 'flex', gap: 8 }}>
+                      <button className="btn btn-sm" onClick={() => openEditRoute(i)}><FiEdit2 size={12} /></button>
+                      <button className="btn btn-sm" style={{ color: 'var(--error)' }} onClick={() => deleteRoute(i)}><FiTrash2 size={12} /></button>
+                    </div>
+                  </div>
+                  <div style={{ fontSize: 13, color: 'var(--gray-600)', display: 'flex', alignItems: 'center', gap: 6 }}><FiSmartphone size={14}/> {r.phone || 'No phone'}</div>
+                </div>
+              ))}
+            </div>
+            {addRouteModal && (
+              <div style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.5)', zIndex: 9999, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 20 }} onClick={() => setAddRouteModal(false)}>
+                <div style={{ background: 'white', borderRadius: 20, padding: 32, maxWidth: 500, width: '100%' }} onClick={e => e.stopPropagation()}>
+                  <h3 style={{ fontWeight: 700, marginBottom: 20 }}>{editRouteIdx !== null ? 'Edit Route' : 'Add Route'}</h3>
+                  <div className="form-group"><label className="form-label">Route Name</label><input className="form-input" value={newRoute.route} onChange={e => setNewRoute({...newRoute, route: e.target.value})} /></div>
+                  <div className="form-group"><label className="form-label">Vehicle</label><input className="form-input" value={newRoute.vehicle} onChange={e => setNewRoute({...newRoute, vehicle: e.target.value})} /></div>
+                  <div className="form-group"><label className="form-label">Driver</label><input className="form-input" value={newRoute.driver} onChange={e => setNewRoute({...newRoute, driver: e.target.value})} /></div>
+                  <div className="form-group"><label className="form-label">Phone</label><input className="form-input" value={newRoute.phone} onChange={e => setNewRoute({...newRoute, phone: e.target.value})} /></div>
+                  <div style={{ display: 'flex', gap: 12, marginTop: 20 }}>
+                    <button className="btn btn-primary" style={{ flex: 1 }} onClick={handleRouteSave}>Save</button>
+                    <button className="btn btn-secondary" onClick={() => setAddRouteModal(false)}>Cancel</button>
+                  </div>
+                </div>
+              </div>
+            )}
+          </div>
+        )
+
+      case 'exams':
+        return (
+          <div style={{ padding: 'var(--space-6)' }}>
+            <h3 style={{ fontWeight: 700, marginBottom: 20 }}>Exam Configuration</h3>
+            <div style={{ display: 'flex', flexWrap: 'wrap', gap: 10, marginBottom: 30 }}>
+              {examTypes.map(type => (
+                <span key={type} style={{ background: 'var(--primary-50)', color: 'var(--primary-700)', padding: '6px 12px', borderRadius: 8, fontSize: 13, fontWeight: 700, border: '1px solid var(--primary-100)', display: 'flex', alignItems: 'center', gap: 8 }}>
+                  {type} <FiX style={{ cursor: 'pointer', color: 'var(--error)' }} onClick={() => handleRemoveExamType(type)} />
+                </span>
+              ))}
+              <div style={{ display: 'flex', gap: 5 }}>
+                <input className="form-input" style={{ width: 100, height: 32 }} placeholder="Type..." value={newExamType} onChange={e => setNewExamType(e.target.value)} onKeyDown={e => e.key === 'Enter' && handleAddExamType()} />
+                <button className="btn btn-primary" style={{ height: 32, padding: '0 10px' }} onClick={handleAddExamType}><FiPlus/></button>
+              </div>
+            </div>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 15 }}>
+              <h4 style={{ fontWeight: 700, fontSize: 15 }}>Total Marks Matrix</h4>
+              <select className="form-select" style={{ width: 150, height: 32, padding: '0 10px', fontSize: 13 }} value={examSelectedClass} onChange={e => setExamSelectedClass(e.target.value)}>
+                {classes.map(c => <option key={c.class} value={c.class}>Class {c.class}</option>)}
+              </select>
+            </div>
+            <div style={{ overflowX: 'auto', background: 'white', borderRadius: 15, border: '1px solid var(--gray-200)' }}>
+              <table className="table" style={{ margin: 0 }}>
+                <thead>
+                  <tr style={{ background: 'var(--gray-50)' }}><th>Subject</th>{examTypes.map(t => <th key={t} style={{ textAlign: 'center' }}>{t}</th>)}</tr>
+                </thead>
+                <tbody>
+                  {(classes.find(c => c.class === examSelectedClass)?.subjects || []).map(sub => (
+                    <tr key={sub}>
+                      <td style={{ fontWeight: 700 }}>{sub}</td>
+                      {examTypes.map(t => (
+                        <td key={t} style={{ padding: 4 }}>
+                          <input type="number" className="form-input" style={{ textAlign: 'center', padding: '4px', border: 'none', background: 'transparent' }} placeholder="0" value={examConfig[`${t}_${examSelectedClass}_${sub}`] || ''} onChange={e => handleUpdateMarks(t, examSelectedClass, sub, e.target.value)} />
+                        </td>
+                      ))}
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          </div>
+        )
+
+      default:
+        return <div style={{ padding: 40, textAlign: 'center', color: 'var(--gray-400)' }}>Select a tab to begin.</div>
+    }
+  }
 
   return (
     <div>
       <div className="dash-page-header">
-        <div className="dash-page-title"><FiSettings style={{ display: 'inline', marginRight: 8 }} />Account Settings</div>
-        <div className="dash-page-subtitle">Manage your profile and portal preferences</div>
+        <div className="dash-page-title"><FiSettings style={{ display: 'inline', marginRight: 8 }} />Settings</div>
+        <div className="dash-page-subtitle">Manage account preferences and school configurations</div>
       </div>
 
       <div style={{ display: 'flex', gap: 'var(--space-6)', alignItems: 'flex-start', flexWrap: 'wrap' }}>
-        {/* Tabs */}
         <div className="dash-widget" style={{ width: 240, padding: 8 }}>
           {tabs.map(tab => (
             <button key={tab.id} onClick={() => setActiveTab(tab.id)}
@@ -371,625 +632,16 @@ export default function SettingsPage() {
                 color: activeTab === tab.id ? 'var(--primary-600)' : 'var(--gray-500)',
                 border: 'none', cursor: 'pointer', fontSize: 'var(--text-sm)',
                 fontWeight: activeTab === tab.id ? 600 : 500,
-                transition: 'all 0.15s', textAlign: 'left'
+                transition: 'all 0.15s', textAlign: 'left', marginBottom: 4
               }}>
               {tab.icon} {tab.label}
             </button>
           ))}
         </div>
 
-        {/* Content */}
-        <div className="dash-widget" style={{ flex: 1, minWidth: 320 }}>
-
-          {/* ── ACADEMIC SESSION TAB ── */}
-          {activeTab === 'session' && isAdmin && (
-            <div style={{ padding: 'var(--space-6)' }}>
-              <div style={{ marginBottom: 24 }}>
-                <h3 style={{ fontWeight: 700, fontSize: 'var(--text-lg)', marginBottom: 6 }}>Academic Session Management</h3>
-                <p style={{ fontSize: 'var(--text-sm)', color: 'var(--gray-500)' }}>
-                  Changing the session updates it across the entire ERP — fees, attendance, and exams.
-                  Previous session data is retained and carry-forward dues are displayed in Fee Management.
-                </p>
-              </div>
-
-              {/* Current session display */}
-              <div style={{ background: 'var(--primary-50)', border: '1px solid var(--primary-200)', borderRadius: 'var(--radius-xl)', padding: '16px 20px', marginBottom: 24, display: 'flex', alignItems: 'center', gap: 12 }}>
-                <FiCalendar size={22} color="var(--primary-500)" />
-                <div>
-                  <div style={{ fontSize: 12, color: 'var(--primary-500)', fontWeight: 600, textTransform: 'uppercase', letterSpacing: 1 }}>Current Session</div>
-                  <div style={{ fontSize: 22, fontWeight: 800, color: 'var(--primary-700)' }}>{currentSession}</div>
-                </div>
-                {sessionSaved && (
-                  <div style={{ marginLeft: 'auto', color: 'var(--accent-600)', display: 'flex', alignItems: 'center', gap: 6, fontWeight: 600, fontSize: 14 }}>
-                    <FiCheckCircle /> Session updated!
-                  </div>
-                )}
-              </div>
-
-              {/* Session selector */}
-              <div className="form-group">
-                <label className="form-label">Change to Session</label>
-                <select
-                  className="form-select"
-                  value={selectedSession}
-                  onChange={e => { setSelectedSession(e.target.value); setShowConfirm(false) }}
-                  style={{ fontSize: 16, fontWeight: 600 }}
-                >
-                  {allSessions.map(s => (
-                    <option key={s} value={s}>{s}{s === currentSession ? ' (Current)' : ''}</option>
-                  ))}
-                </select>
-              </div>
-
-              {selectedSession !== currentSession && !showConfirm && (
-                <button className="btn btn-primary" style={{ marginTop: 8 }}
-                  onClick={() => setShowConfirm(true)}>
-                  <FiRefreshCw /> Switch to {selectedSession}
-                </button>
-              )}
-
-              {/* Confirmation box */}
-              {showConfirm && selectedSession !== currentSession && (
-                <div style={{ background: '#fffbeb', border: '1px solid #f59e0b', borderRadius: 'var(--radius-xl)', padding: '16px 20px', marginTop: 16 }}>
-                  <div style={{ display: 'flex', gap: 10, marginBottom: 12 }}>
-                    <FiAlertTriangle size={20} color="#d97706" />
-                    <div style={{ fontWeight: 700, color: '#92400e' }}>Confirm Session Change</div>
-                  </div>
-                  <p style={{ fontSize: 13, color: '#78350f', marginBottom: 16 }}>
-                    You are switching the active session from <strong>{currentSession}</strong> to <strong>{selectedSession}</strong>.
-                    All new fee entries, attendance, and exam records will be tagged to the new session.
-                    Existing data from <strong>{currentSession}</strong> will be preserved and remain accessible.
-                    Students with unpaid dues will show carry-forward balances in the new session.
-                  </p>
-                  <div style={{ display: 'flex', gap: 10 }}>
-                    <button className="btn btn-primary" style={{ background: '#d97706', borderColor: '#d97706' }} onClick={handleSessionChange}>
-                      <FiCheckCircle /> Confirm — Switch to {selectedSession}
-                    </button>
-                    <button className="btn btn-secondary" onClick={() => { setShowConfirm(false); setSelectedSession(currentSession) }}>Cancel</button>
-                  </div>
-                </div>
-              )}
-
-              <div style={{ marginTop: 25, padding: '15px 20px', background: 'var(--accent-50)', borderRadius: 'var(--radius-xl)', border: '1px solid var(--accent-100)', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                <div style={{ display: 'flex', gap: 12, alignItems: 'center' }}>
-                  <FiRefreshCw color="var(--accent-600)" />
-                  <div>
-                    <div style={{ fontWeight: 700, fontSize: 13, color: 'var(--accent-800)' }}>Sync Session Continuity</div>
-                    <div style={{ fontSize: 11, color: 'var(--accent-600)' }}>Validate carry-forward dues from previous sessions to the current year.</div>
-                  </div>
-                </div>
-                <button className="btn btn-primary btn-sm" style={{ background: 'var(--accent-500)', border: 'none' }} onClick={syncSessions}>Verify Continuity</button>
-              </div>
-
-              {/* Add/Delete Sessions (Admin Only) */}
-              <div style={{ marginTop: 40, borderTop: '1px solid var(--gray-100)', paddingTop: 30 }}>
-                <h4 style={{ fontWeight: 700, fontSize: 15, marginBottom: 15 }}>Manage Academic Years</h4>
-                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 25 }}>
-                   <div className="card" style={{ padding: 20, background: 'var(--gray-50)' }}>
-                      <label className="form-label" style={{ fontSize: 11 }}>Create New Year</label>
-                      <div style={{ display: 'flex', gap: 10 }}>
-                        <input 
-                          className="form-input" 
-                          placeholder="e.g. 2028-29" 
-                          value={newSessionInput}
-                          onChange={e => setNewSessionInput(e.target.value)}
-                        />
-                        <button className="btn btn-primary" onClick={() => {
-                          if (addSession(newSessionInput)) setNewSessionInput('')
-                          else alert('Invalid format or session already exists.')
-                        }}>
-                          <FiPlus />
-                        </button>
-                      </div>
-                      <p style={{ fontSize: 10, color: 'var(--gray-400)', marginTop: 8 }}>Format: YYYY-YY (New data will be initialized for this year)</p>
-                   </div>
-
-                   <div className="card" style={{ padding: 20, background: 'var(--gray-50)' }}>
-                      <label className="form-label" style={{ fontSize: 11 }}>Existing Sessions</label>
-                      <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8 }}>
-                        {sessions.map(s => (
-                          <div key={s} style={{ display: 'flex', alignItems: 'center', gap: 8, padding: '6px 12px', background: 'white', border: '1px solid var(--gray-200)', borderRadius: 10, fontSize: 12, fontWeight: 700 }}>
-                            {s}
-                            {s !== currentSession && (
-                              <button 
-                                onClick={() => { if(confirm(`Delete ${s} and ALL its data?`)) deleteSession(s) }}
-                                style={{ color: 'var(--error)', border: 'none', background: 'transparent', cursor: 'pointer', padding: 0, display: 'flex' }}
-                              >
-                                <FiTrash2 size={12} />
-                              </button>
-                            )}
-                          </div>
-                        ))}
-                      </div>
-                   </div>
-                </div>
-              </div>
-
-              {/* Info about previous session dues */}
-              <div style={{ marginTop: 32, padding: '14px 18px', background: 'var(--gray-50)', borderRadius: 'var(--radius-xl)', border: '1px solid var(--gray-200)' }}>
-                <div style={{ fontWeight: 700, fontSize: 13, marginBottom: 8, color: 'var(--gray-700)' }}>How carry-forward dues work</div>
-                <ul style={{ fontSize: 13, color: 'var(--gray-500)', paddingLeft: 18, lineHeight: 2 }}>
-                  <li>Each session stores its own fee records separately.</li>
-                  <li>When you open a student's fees in any session, all unpaid balances from older sessions appear as <strong>Carry-Forward Dues</strong>.</li>
-                  <li>Admin can collect dues for any past session directly from the Fee Management page.</li>
-                  <li>Receipts clearly show which session the payment belongs to.</li>
-                </ul>
-              </div>
-            </div>
-          )}
-
-          {/* ── FEE CONFIGURATION TAB ── */}
-          {activeTab === 'fee-config' && isAdmin && (
-            <div style={{ padding: 'var(--space-6)' }}>
-              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 24, paddingBottom: 15, borderBottom: '1px solid var(--gray-100)' }}>
-                <div>
-                  <h3 style={{ fontWeight: 700, fontSize: 'var(--text-lg)', marginBottom: 6 }}>Global Fee Structure Configuration</h3>
-                  <p style={{ fontSize: 'var(--text-sm)', color: 'var(--gray-500)' }}>
-                    Set default fees based on Class and Transport Route. These defaults can be applied when collecting student fees.
-                  </p>
-                </div>
-                <div style={{ display: 'flex', gap: 10 }}>
-                  <button 
-                    className="btn btn-secondary" 
-                    onClick={() => {
-                      alert('Fee structure synchronized with latest Classes and Transport Routes!');
-                    }} 
-                    title="Refresh the list of classes and routes from the database"
-                  >
-                    <FiRefreshCw /> Sync Structures
-                  </button>
-                  <button className="btn btn-secondary" onClick={syncFeesToAllStudents} title="Propagate these changes to all existing student records for the current session"><FiRefreshCw /> Recalculate All Students</button>
-                  <button className="btn btn-primary" onClick={() => {
-                    localStorage.setItem(`erp_${schoolId}_global_fee_config`, JSON.stringify(globalFeeConfig))
-                    localStorage.setItem(`erp_${schoolId}_global_fee_config_${currentSession}`, JSON.stringify(globalFeeConfig))
-                    setFeeConfigSaved(true)
-                    setTimeout(() => setFeeConfigSaved(false), 3000)
-                  }}>
-                    {feeConfigSaved ? <><FiCheckCircle /> Saved</> : <><FiSave /> Save Configuration</>}
-                  </button>
-                </div>
-              </div>
-
-              {feeConfigSaved && (
-                <div style={{ background: '#dcfce7', color: '#166534', padding: '12px 16px', borderRadius: 'var(--radius-md)', display: 'flex', alignItems: 'center', gap: 8, marginBottom: 20 }}>
-                  <FiCheckCircle /> Fee Configuration Saved Successfully!
-                </div>
-              )}
-
-              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 40 }}>
-                {/* Class-wise Fees */}
-                <div>
-                  <h4 style={{ fontWeight: 700, marginBottom: 15, paddingBottom: 10, borderBottom: '1px solid var(--gray-200)', color: 'var(--primary-600)' }}>Class-wise Base Fee (₹)</h4>
-                  {classes.map(c => c.class).map(cls => (
-                    <div key={cls} style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 12 }}>
-                      <label style={{ fontSize: 14, fontWeight: 600, color: 'var(--gray-700)', width: 80 }}>Class {cls}</label>
-                      <input 
-                        type="number" className="form-input" style={{ width: 'calc(100% - 90px)' }} placeholder="e.g. 40000"
-                        value={globalFeeConfig.classFees[cls] || ''}
-                        onChange={(e) => setGlobalFeeConfig(prev => ({...prev, classFees: {...prev.classFees, [cls]: e.target.value}}))}
-                      />
-                    </div>
-                  ))}
-                  {classes.length === 0 && (
-                    <div style={{ color: 'var(--gray-400)', fontSize: 13, fontStyle: 'italic' }}>No classes configured. Add classes in the Classes & Sections tab first.</div>
-                  )}
-                </div>
-
-                {/* Transport Route Fees */}
-                <div>
-                  <h4 style={{ fontWeight: 700, marginBottom: 15, paddingBottom: 10, borderBottom: '1px solid var(--gray-200)', color: 'var(--primary-600)' }}>Transport Location-wise Fee (₹)</h4>
-                  {transportRoutes.map((route, i) => (
-                    <div key={i} style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 12 }}>
-                      <label style={{ fontSize: 14, fontWeight: 600, color: 'var(--gray-700)', width: 140, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }} title={route.route}>
-                        {route.route}
-                      </label>
-                      <input 
-                        type="number" className="form-input" style={{ width: 'calc(100% - 150px)' }} placeholder="e.g. 8000"
-                        value={globalFeeConfig.transportFees[route.route] || ''}
-                        onChange={(e) => setGlobalFeeConfig(prev => ({...prev, transportFees: {...prev.transportFees, [route.route]: e.target.value}}))}
-                      />
-                    </div>
-                  ))}
-                  {transportRoutes.length === 0 && (
-                    <div style={{ color: 'var(--gray-400)', fontSize: 13, fontStyle: 'italic' }}>No transport routes configured. Add routes in the "Transport Routes" tab first.</div>
-                  )}
-                </div>
-              </div>
-            </div>
-          )}
-
-          {/* ── GLOBAL BRANDING & MEDIA TAB ── */}
-          {activeTab === 'branding' && isAdmin && (
-            <div style={{ padding: 'var(--space-6)' }}>
-              <div style={{ marginBottom: 24 }}>
-                <h3 style={{ fontWeight: 700, fontSize: 'var(--text-lg)', marginBottom: 6 }}>Global Branding & Media Uploads</h3>
-                <p style={{ fontSize: 'var(--text-sm)', color: 'var(--gray-500)' }}>
-                  Upload custom backgrounds, logos, signatures, and stamps to be used automatically across Marksheets, ID Cards, and Transfer Certificates.
-                </p>
-              </div>
-              
-              <div style={{ display: 'grid', gridTemplateColumns: '1fr', gap: 20, maxWidth: 600 }}>
-                <div className="form-group">
-                  <label className="form-label">Background Template Image (Marksheet/TC)</label>
-                  <input type="file" className="form-input" accept="image/*" onChange={e => handleFileUpload(e, 'bgImage')} />
-                  {certConfig.bgImage && <img src={certConfig.bgImage} style={{ height: 80, marginTop: 10, objectFit: 'contain', border: '1px solid var(--gray-200)', borderRadius: 8 }} />}
-                  {certConfig.bgImage && <button className="btn btn-sm" style={{ marginTop: 5, color: 'var(--error)' }} onClick={() => { const u = {...certConfig, bgImage: null}; setCertConfig(u); localStorage.setItem(`erp_${schoolId}_cert_config`, JSON.stringify(u)) }}>Remove Template</button>}
-                </div>
-
-                {certConfig.bgImage && (
-                  <div className="form-group">
-                    <label className="form-label">Top Content Margin (px) - Adjust to sit below your printed headers</label>
-                    <input type="range" min="0" max="400" className="form-range" style={{ width: '100%' }} value={certConfig.contentMarginTop || 0} onChange={e => { const u = {...certConfig, contentMarginTop: Number(e.target.value)}; setCertConfig(u); localStorage.setItem(`erp_${schoolId}_cert_config`, JSON.stringify(u)) }} />
-                    <div style={{ fontSize: 12, color: 'var(--gray-500)', marginTop: 5 }}>Current Margin: {certConfig.contentMarginTop}px</div>
-                  </div>
-                )}
-
-                <div className="form-group">
-                  <label className="form-label">School Logo Image</label>
-                  <input type="file" className="form-input" accept="image/*" onChange={e => handleFileUpload(e, 'logoImage')} />
-                  {certConfig.logoImage && <img src={certConfig.logoImage} style={{ height: 60, marginTop: 10, objectFit: 'contain' }} />}
-                  {certConfig.logoImage && <button className="btn btn-sm" style={{ marginTop: 5, color: 'var(--error)' }} onClick={() => { const u = {...certConfig, logoImage: null}; setCertConfig(u); localStorage.setItem(`erp_${schoolId}_cert_config`, JSON.stringify(u)) }}>Remove Logo</button>}
-                </div>
-
-                <div className="form-group">
-                  <label className="form-label">Admin/Principal Signature Image</label>
-                  <input type="file" className="form-input" accept="image/*" onChange={e => handleFileUpload(e, 'signImage')} />
-                  {certConfig.signImage && <img src={certConfig.signImage} style={{ height: 40, marginTop: 10, objectFit: 'contain' }} />}
-                  {certConfig.signImage && <button className="btn btn-sm" style={{ marginTop: 5, color: 'var(--error)' }} onClick={() => { const u = {...certConfig, signImage: null}; setCertConfig(u); localStorage.setItem(`erp_${schoolId}_cert_config`, JSON.stringify(u)) }}>Remove Sign</button>}
-                </div>
-
-                <div className="form-group">
-                  <label className="form-label">QR Code / Stamp Image</label>
-                  <input type="file" className="form-input" accept="image/*" onChange={e => handleFileUpload(e, 'qrImage')} />
-                  {certConfig.qrImage && <img src={certConfig.qrImage} style={{ height: 60, marginTop: 10, objectFit: 'contain' }} />}
-                  {certConfig.qrImage && <button className="btn btn-sm" style={{ marginTop: 5, color: 'var(--error)' }} onClick={() => { const u = {...certConfig, qrImage: null}; setCertConfig(u); localStorage.setItem(`erp_${schoolId}_cert_config`, JSON.stringify(u)) }}>Remove QR</button>}
-                </div>
-              </div>
-            </div>
-          )}
-
-          {/* ── CLASSES & SECTIONS TAB ── */}
-          {activeTab === 'classes' && isAdmin && (
-            <div style={{ padding: 'var(--space-6)' }}>
-              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 24 }}>
-                <div>
-                  <h3 style={{ fontWeight: 700, fontSize: 'var(--text-lg)', marginBottom: 6 }}>Class & Section Management</h3>
-                  <p style={{ fontSize: 'var(--text-sm)', color: 'var(--gray-500)' }}>
-                    Add, edit, or remove classes and assign default sections.
-                  </p>
-                </div>
-                <button className="btn btn-primary" onClick={() => setAddClassModal(true)}>
-                  <FiPlus /> Add New Class
-                </button>
-                <button className="btn btn-secondary" onClick={syncAcademic} style={{ marginLeft: 10 }}>
-                  <FiRefreshCw /> Sync from Global
-                </button>
-              </div>
-
-              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(280px, 1fr))', gap: 20 }}>
-                {classes.map((c, i) => (
-                  <div key={i} style={{ background: 'var(--primary-50)', padding: 15, borderRadius: 'var(--radius-lg)', border: '1px solid var(--primary-100)' }}>
-                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 15 }}>
-                      <span style={{ fontWeight: 800, color: 'var(--primary-700)', fontSize: 16 }}>Class {c.class}</span>
-                      <div style={{ display: 'flex', gap: 10 }}>
-                        <button className="btn btn-sm btn-secondary" style={{ padding: 4 }} onClick={() => openEditClass(i)}><FiEdit2 size={12} /></button>
-                        <button className="btn btn-sm btn-secondary" style={{ padding: 4, color: 'var(--error)' }} onClick={() => deleteClass(i)}><FiTrash2 size={12} /></button>
-                      </div>
-                    </div>
-                    <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
-                      {c.sections.map((sec, idx) => (
-                        <div key={idx} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '8px 12px', background: 'white', borderRadius: 8 }}>
-                          <div>
-                            <span style={{ fontWeight: 700, color: 'var(--gray-800)', marginRight: 10 }}>Sec {sec.name}</span>
-                            <span style={{ fontSize: 11, color: 'var(--gray-500)' }}>{sec.teacher || 'No teacher'}</span>
-                          </div>
-                          <FiUsers size={12} color="var(--gray-400)" />
-                        </div>
-                      ))}
-                    </div>
-
-                    <div style={{ borderTop: '1px solid var(--primary-100)', marginTop: 15, paddingTop: 15 }}>
-                      <div style={{ fontSize: 12, fontWeight: 700, color: 'var(--primary-600)', marginBottom: 10, textTransform: 'uppercase' }}>Subjects</div>
-                      <div style={{ display: 'flex', flexWrap: 'wrap', gap: 6, marginBottom: 10 }}>
-                        {c.subjects.map((sub, idx) => (
-                          <div key={idx} style={{ background: 'white', padding: '4px 8px', borderRadius: 6, fontSize: 11, display: 'flex', alignItems: 'center', gap: 6, border: '1px solid var(--gray-200)' }}>
-                            {sub}
-                            <FiX size={12} style={{ cursor: 'pointer', color: 'var(--error)' }} onClick={() => removeSubjectFromClass(i, idx)} />
-                          </div>
-                        ))}
-                      </div>
-                      <div style={{ display: 'flex', gap: 6 }}>
-                        <input 
-                          type="text" className="form-input" style={{ padding: '6px 10px', fontSize: 12, height: 'auto' }} placeholder="Add subject..."
-                          value={newSubjectInput[i] || ''}
-                          onChange={(e) => setNewSubjectInput({...newSubjectInput, [i]: e.target.value})}
-                          onKeyDown={(e) => e.key === 'Enter' && addSubjectToClass(i)}
-                        />
-                        <button className="btn btn-primary" style={{ padding: '6px 10px', height: 'auto' }} onClick={() => addSubjectToClass(i)}><FiPlus size={14} /></button>
-                      </div>
-                    </div>
-                  </div>
-                ))}
-              </div>
-
-              {addClassModal && (
-                <div style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.5)', zIndex: 9999, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 20 }} onClick={() => setAddClassModal(false)}>
-                  <div style={{ background: 'white', borderRadius: 20, padding: 32, maxWidth: 500, width: '100%' }} onClick={e => e.stopPropagation()}>
-                    <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 20 }}>
-                      <h3 style={{ fontWeight: 700 }}>{editClassIdx !== null ? 'Edit Class' : 'Add New Class'}</h3>
-                      <button onClick={() => { setAddClassModal(false); setEditClassIdx(null); }}><FiX /></button>
-                    </div>
-
-                    <div className="form-group">
-                      <label className="form-label">Class Name (e.g. UKG, 10th)</label>
-                      <input className="form-input" placeholder="Enter class name" value={newClass.name} onChange={e => setNewClass({...newClass, name: e.target.value})} />
-                    </div>
-
-                    <div className="form-group">
-                      <label className="form-label" style={{ display: 'flex', justifyContent: 'space-between' }}>
-                        Sections 
-                        <button className="btn btn-sm btn-secondary" style={{ height: 'auto', padding: '2px 8px' }} onClick={() => setNewClass({...newClass, sections: [...newClass.sections, { name: '', teacher: '' }]})}><FiPlus size={10} /> Add</button>
-                      </label>
-                      <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
-                        {newClass.sections.map((sec, idx) => (
-                          <div key={idx} style={{ display: 'flex', gap: 8 }}>
-                            <input className="form-input" style={{ width: 60 }} placeholder="Name" value={sec.name} onChange={e => {
-                              const updated = [...newClass.sections]
-                              updated[idx].name = e.target.value
-                              setNewClass({...newClass, sections: updated})
-                            }} />
-                            <input className="form-input" style={{ flex: 1 }} placeholder="Teacher Name" value={sec.teacher} onChange={e => {
-                              const updated = [...newClass.sections]
-                              updated[idx].teacher = e.target.value
-                              setNewClass({...newClass, sections: updated})
-                            }} />
-                            {newClass.sections.length > 1 && (
-                              <button className="btn btn-sm btn-secondary" style={{ color: 'var(--error)' }} onClick={() => {
-                                const updated = newClass.sections.filter((_, i) => i !== idx)
-                                setNewClass({...newClass, sections: updated})
-                              }}><FiTrash2 size={12} /></button>
-                            )}
-                          </div>
-                        ))}
-                      </div>
-                    </div>
-
-                    <div style={{ display: 'flex', gap: 12, marginTop: 30 }}>
-                      <button className="btn btn-primary" style={{ flex: 1 }} onClick={handleClassSave}>Save Class</button>
-                      <button className="btn btn-secondary" onClick={() => { setAddClassModal(false); setEditClassIdx(null); }}>Cancel</button>
-                    </div>
-                  </div>
-                </div>
-              )}
-            </div>
-          )}
-
-          {/* ── TRANSPORT ROUTES TAB ── */}
-          {activeTab === 'transport' && isAdmin && (
-            <div style={{ padding: 'var(--space-6)' }}>
-              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 24 }}>
-                <div>
-                  <h3 style={{ fontWeight: 700, fontSize: 'var(--text-lg)', marginBottom: 6 }}>Transport Route Management</h3>
-                  <p style={{ fontSize: 'var(--text-sm)', color: 'var(--gray-500)' }}>
-                    Add and manage transport routes and assign vehicles/drivers.
-                  </p>
-                </div>
-                <button className="btn btn-primary" onClick={() => setAddRouteModal(true)}>
-                  <FiPlus /> Add New Route
-                </button>
-              </div>
-
-              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(300px, 1fr))', gap: 20 }}>
-                {transportRoutes.map((r, i) => (
-                  <div key={i} className="dash-widget" style={{ padding: 15, border: '1px solid var(--gray-100)' }}>
-                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 15 }}>
-                      <div>
-                        <div style={{ fontWeight: 800, color: 'var(--primary-700)', fontSize: 16 }}>{r.route}</div>
-                        <div style={{ fontSize: 12, color: 'var(--gray-500)' }}>{r.vehicle} • {r.driver}</div>
-                      </div>
-                      <div style={{ display: 'flex', gap: 8 }}>
-                        <button className="btn btn-sm btn-secondary" onClick={() => openEditRoute(i)}><FiEdit2 size={14} /></button>
-                        <button className="btn btn-sm btn-secondary" style={{ color: 'var(--error)' }} onClick={() => deleteRoute(i)}><FiTrash2 size={14} /></button>
-                      </div>
-                    </div>
-                    <div style={{ display: 'flex', alignItems: 'center', gap: 8, fontSize: 13, color: 'var(--gray-600)' }}>
-                      <FiSmartphone size={14} /> {r.phone || 'No phone provided'}
-                    </div>
-                  </div>
-                ))}
-              </div>
-
-              {addRouteModal && (
-                <div style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.5)', zIndex: 9999, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 20 }} onClick={() => setAddRouteModal(false)}>
-                  <div style={{ background: 'white', borderRadius: 20, padding: 32, maxWidth: 500, width: '100%' }} onClick={e => e.stopPropagation()}>
-                    <h3 style={{ fontWeight: 700, marginBottom: 20 }}>{editRouteIdx !== null ? 'Edit Route' : 'Add New Route'}</h3>
-                    <div className="form-group">
-                      <label className="form-label">Route/Location Name</label>
-                      <input className="form-input" placeholder="e.g. Sector 12, Main Market" value={newRoute.route} onChange={e => setNewRoute({...newRoute, route: e.target.value})} />
-                    </div>
-                    <div className="form-group">
-                      <label className="form-label">Vehicle Number</label>
-                      <input className="form-input" placeholder="e.g. MH 12 AB 1234" value={newRoute.vehicle} onChange={e => setNewRoute({...newRoute, vehicle: e.target.value})} />
-                    </div>
-                    <div className="form-group">
-                      <label className="form-label">Driver Name</label>
-                      <input className="form-input" placeholder="Enter driver name" value={newRoute.driver} onChange={e => setNewRoute({...newRoute, driver: e.target.value})} />
-                    </div>
-                    <div className="form-group">
-                      <label className="form-label">Driver Phone</label>
-                      <input className="form-input" placeholder="Enter phone number" value={newRoute.phone} onChange={e => setNewRoute({...newRoute, phone: e.target.value})} />
-                    </div>
-                    <div style={{ display: 'flex', gap: 12, marginTop: 20 }}>
-                      <button className="btn btn-primary" style={{ flex: 1 }} onClick={handleRouteSave}>Save Route</button>
-                      <button className="btn btn-secondary" onClick={() => { setAddRouteModal(false); setEditRouteIdx(null); }}>Cancel</button>
-                    </div>
-                  </div>
-                </div>
-              )}
-            </div>
-          )}
-
-          {/* ── EXAM CONFIGURATION TAB ── */}
-          {activeTab === 'exams' && isAdmin && (
-            <div style={{ padding: 'var(--space-6)' }}>
-              <div style={{ marginBottom: 24, borderBottom: '1px solid var(--gray-100)', paddingBottom: 15 }}>
-                <h3 style={{ fontWeight: 700, fontSize: 'var(--text-lg)', marginBottom: 6 }}>Academic Exam Configuration</h3>
-                <p style={{ fontSize: 'var(--text-sm)', color: 'var(--gray-500)' }}>
-                  Manage test types and define total marks for each subject. These settings are used for result entry and report cards.
-                </p>
-              </div>
-
-              {/* Test Types Section */}
-              <div style={{ marginBottom: 40 }}>
-                <h4 style={{ fontWeight: 700, marginBottom: 15, fontSize: 15, display: 'flex', alignItems: 'center', gap: 8 }}>
-                  <FiFileText color="var(--primary-600)" /> Manage Test Types
-                </h4>
-                <div style={{ display: 'flex', flexWrap: 'wrap', gap: 10, marginBottom: 15 }}>
-                  {examTypes.map(type => (
-                    <div key={type} style={{ background: 'var(--primary-50)', color: 'var(--primary-700)', padding: '8px 12px', borderRadius: 10, display: 'flex', alignItems: 'center', gap: 10, fontSize: 13, fontWeight: 700, border: '1px solid var(--primary-100)' }}>
-                      {type}
-                      <FiX style={{ cursor: 'pointer', color: 'var(--error)' }} onClick={() => handleRemoveExamType(type)} />
-                    </div>
-                  ))}
-                  <div style={{ display: 'flex', gap: 6 }}>
-                    <input className="form-input" style={{ width: 120, padding: '6px 10px', height: 'auto' }} placeholder="e.g. UNIT1" value={newExamType} onChange={e => setNewExamType(e.target.value)} onKeyDown={e => e.key === 'Enter' && handleAddExamType()} />
-                    <button className="btn btn-primary" style={{ padding: '6px 12px', height: 'auto' }} onClick={handleAddExamType}><FiPlus /></button>
-                  </div>
-                </div>
-              </div>
-
-              {/* Marks Matrix */}
-              <div>
-                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 15 }}>
-                  <h4 style={{ fontWeight: 700, fontSize: 15, display: 'flex', alignItems: 'center', gap: 8, margin: 0 }}>
-                    <FiGrid color="var(--accent-600)" /> Total Marks Matrix
-                  </h4>
-                  <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-                    <span style={{ fontSize: 12, fontWeight: 700, color: 'var(--gray-500)' }}>Select Class:</span>
-                    <select 
-                      className="form-select" 
-                      style={{ width: 150, padding: '4px 10px', height: 'auto', fontSize: 13, fontWeight: 700 }}
-                      value={examSelectedClass}
-                      onChange={e => setExamSelectedClass(e.target.value)}
-                    >
-                      {classes.map(c => <option key={c.class} value={c.class}>Class {c.class}</option>)}
-                    </select>
-                  </div>
-                </div>
-
-                {currentClassSubjects.length === 0 ? (
-                  <div style={{ background: 'var(--gray-50)', padding: 30, borderRadius: 15, textAlign: 'center', color: 'var(--gray-400)' }}>
-                    No subjects found for Class {examSelectedClass}. Please add subjects in the "Classes & Sections" tab first.
-                  </div>
-                ) : (
-                  <div style={{ overflowX: 'auto', background: 'white', borderRadius: 15, border: '1px solid var(--gray-200)' }}>
-                    <table className="table" style={{ margin: 0 }}>
-                      <thead>
-                        <tr style={{ background: 'var(--gray-50)' }}>
-                          <th style={{ minWidth: 150 }}>Subject</th>
-                          {examTypes.map(t => <th key={t} style={{ textAlign: 'center' }}>{t}</th>)}
-                        </tr>
-                      </thead>
-                      <tbody>
-                        {currentClassSubjects.map(sub => (
-                          <tr key={sub}>
-                            <td style={{ fontWeight: 700, color: 'var(--gray-700)' }}>{sub}</td>
-                            {examTypes.map(t => (
-                              <td key={t} style={{ padding: 4 }}>
-                                <input 
-                                  type="number" 
-                                  className="form-input" 
-                                  style={{ textAlign: 'center', padding: '6px', fontSize: 13, background: 'transparent', border: '1px solid transparent' }} 
-                                  placeholder="0"
-                                  value={examConfig[`${t}_${examSelectedClass}_${sub}`] || ''}
-                                  onFocus={e => e.target.style.border = '1px solid var(--primary-300)'}
-                                  onBlur={e => e.target.style.border = '1px solid transparent'}
-                                  onChange={e => handleUpdateMarks(t, examSelectedClass, sub, e.target.value)}
-                                />
-                              </td>
-                            ))}
-                          </tr>
-                        ))}
-                      </tbody>
-                    </table>
-                  </div>
-                )}
-                <p style={{ fontSize: 11, color: 'var(--gray-400)', marginTop: 15 }}>
-                  Note: Leave marks blank or set to 0 if a subject is not applicable for a specific test type. Changes are saved automatically.
-                </p>
-              </div>
-            </div>
-          )}
-
-          {/* ── PROFILE TAB ── */}
-          {activeTab === 'profile' && (
-            <form onSubmit={handleSave} style={{ padding: 'var(--space-4)' }}>
-              <div style={{ display: 'flex', alignItems: 'center', gap: 20, marginBottom: 30 }}>
-                <div style={{ width: 80, height: 80, borderRadius: '50%', background: 'var(--primary-100)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 24, fontWeight: 800, color: 'var(--primary-600)', overflow: 'hidden' }}>
-                  {user?.photo ? (
-                    <img src={user.photo} style={{ width: '100%', height: '100%', objectFit: 'cover' }} alt="Profile" />
-                  ) : (
-                    user?.name?.split(' ').map(n => n[0]).join('').slice(0, 2).toUpperCase()
-                  )}
-                </div>
-                <div>
-                  <label className="btn btn-secondary btn-sm" style={{ cursor: 'pointer' }}>
-                    Change Photo
-                    <input type="file" hidden accept="image/*" onChange={handleProfilePhoto} />
-                  </label>
-                  <div style={{ fontSize: 10, color: 'var(--gray-400)', marginTop: 8 }}>Recommended size: 400x400px</div>
-                </div>
-              </div>
-              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 20 }}>
-                <div className="form-group"><label className="form-label">Full Name</label><input className="form-input" value={formData.name} onChange={e => setFormData({ ...formData, name: e.target.value })} /></div>
-                <div className="form-group"><label className="form-label">Email Address</label><input className="form-input" type="email" value={formData.email} onChange={e => setFormData({ ...formData, email: e.target.value })} /></div>
-                <div className="form-group"><label className="form-label">Phone Number</label><input className="form-input" value={formData.phone} onChange={e => setFormData({ ...formData, phone: e.target.value })} /></div>
-                <div className="form-group"><label className="form-label">User ID</label><input className="form-input" value={user?.id} readOnly style={{ background: 'var(--gray-50)' }} /></div>
-              </div>
-              <div style={{ marginTop: 30, paddingTop: 20, borderTop: '1px solid var(--gray-100)', display: 'flex', alignItems: 'center', gap: 15 }}>
-                <button type="submit" className="btn btn-primary"><FiSave /> Save Changes</button>
-                {saved && <span style={{ fontSize: 'var(--text-sm)', color: 'var(--accent-600)', fontWeight: 600 }}><FiCheckCircle style={{ display: 'inline', marginRight: 4 }} />Saved!</span>}
-              </div>
-            </form>
-          )}
-
-          {/* ── SECURITY TAB ── */}
-          {activeTab === 'security' && (
-            <form onSubmit={handleSave} style={{ padding: 'var(--space-4)', maxWidth: 400 }}>
-              <div className="form-group"><label className="form-label">Current Password</label><input className="form-input" type="password" placeholder="••••••••" autoComplete="new-password" /></div>
-              <div className="form-group"><label className="form-label">New Password</label><input className="form-input" type="password" placeholder="••••••••" autoComplete="new-password" /></div>
-              <div className="form-group"><label className="form-label">Confirm New Password</label><input className="form-input" type="password" placeholder="••••••••" autoComplete="new-password" /></div>
-              <div style={{ marginTop: 20, display: 'flex', alignItems: 'center', gap: 15 }}>
-                <button type="submit" className="btn btn-primary"><FiSave /> Update Password</button>
-                {saved && <span style={{ fontSize: 'var(--text-sm)', color: 'var(--accent-600)', fontWeight: 600 }}><FiCheckCircle style={{ display: 'inline', marginRight: 4 }} />Updated!</span>}
-              </div>
-            </form>
-          )}
-
-          {/* ── NOTIFICATIONS TAB ── */}
-          {activeTab === 'notifications' && (
-            <div style={{ padding: 'var(--space-4)', display: 'flex', flexDirection: 'column', gap: 20 }}>
-              {[
-                { label: 'Email Notifications', desc: 'Receive updates on your registered email' },
-                { label: 'SMS Alerts', desc: 'Attendance and fee alerts via SMS' },
-                { label: 'Mobile App Push', desc: 'Instant notifications on your school app' },
-                { label: 'Circulars & Notices', desc: 'Get notified when a new notice is posted' },
-              ].map((n, i) => (
-                <div key={i} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                  <div>
-                    <div style={{ fontSize: 'var(--text-sm)', fontWeight: 600, color: 'var(--gray-700)' }}>{n.label}</div>
-                    <div style={{ fontSize: 'var(--text-xs)', color: 'var(--gray-400)' }}>{n.desc}</div>
-                  </div>
-                  <label style={{ width: 44, height: 24, background: 'var(--primary-500)', borderRadius: 12, display: 'block', position: 'relative', cursor: 'pointer' }}>
-                    <div style={{ position: 'absolute', right: 2, top: 2, width: 20, height: 20, background: 'white', borderRadius: '50%' }} />
-                  </label>
-                </div>
-              ))}
-            </div>
-          )}
-
+        <div className="dash-widget" style={{ flex: 1, minWidth: 320, minHeight: 500 }}>
+          {renderTabContent()}
         </div>
-
       </div>
     </div>
   )
