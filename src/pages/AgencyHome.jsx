@@ -23,6 +23,23 @@ export default function AgencyHome() {
     phone: '',
     message: ''
   })
+
+  // Dynamic Phrases
+  const phrases = [
+    { main: "Digital", sub: "Excellence" },
+    { main: "Academic", sub: "Innovation" },
+    { main: "Cloud", sub: "Education" },
+    { main: "Smart", sub: "Management" },
+    { main: "Future", sub: "Learning" }
+  ]
+  const [currentPhrase, setCurrentPhrase] = useState(0)
+
+  useEffect(() => {
+    const timer = setInterval(() => {
+      setCurrentPhrase((prev) => (prev + 1) % phrases.length)
+    }, 3000)
+    return () => clearInterval(timer)
+  }, [])
   
   const targetRef = useRef(null)
   const { scrollYProgress } = useScroll({ target: targetRef })
@@ -91,6 +108,40 @@ export default function AgencyHome() {
       {/* Background Layer */}
       <div className="immersive-bg">
         <div className="mesh-grid"></div>
+        
+        {/* Particle System */}
+        <div className="particles-overlay">
+          {[...Array(30)].map((_, i) => (
+            <motion.div
+              key={i}
+              className="particle"
+              initial={{ 
+                x: Math.random() * window.innerWidth, 
+                y: Math.random() * window.innerHeight,
+                opacity: Math.random() * 0.5 
+              }}
+              animate={{ 
+                y: [null, Math.random() * -100 - 50],
+                opacity: [0, 0.5, 0]
+              }}
+              transition={{ 
+                duration: Math.random() * 5 + 5, 
+                repeat: Infinity, 
+                ease: "linear",
+                delay: Math.random() * 5
+              }}
+              style={{
+                width: Math.random() * 4 + 2,
+                height: Math.random() * 4 + 2,
+                background: i % 2 === 0 ? 'var(--primary)' : 'var(--secondary)',
+                borderRadius: '50%',
+                position: 'absolute',
+                filter: 'blur(2px)'
+              }}
+            />
+          ))}
+        </div>
+
         <motion.div 
           className="floating-object" 
           style={{ width: 600, height: 600, top: '10%', left: '-10%', x: useTransform(smoothProgress, [0, 1], [0, 200]) }}
@@ -120,7 +171,23 @@ export default function AgencyHome() {
               display: 'block',
               marginBottom: 20
             }}>The Future of Academic Management</span>
-            <h1 className="hero-glitch-title">Digital<br />Excellence</h1>
+            <div style={{ height: '240px', display: 'flex', flexDirection: 'column', justifyContent: 'center', marginBottom: 20 }}>
+              <AnimatePresence mode="wait">
+                <motion.h1 
+                  key={currentPhrase}
+                  initial={{ opacity: 0, y: 40, filter: 'blur(10px)' }}
+                  animate={{ opacity: 1, y: 0, filter: 'blur(0px)' }}
+                  exit={{ opacity: 0, y: -40, filter: 'blur(10px)' }}
+                  transition={{ duration: 0.8, ease: "circOut" }}
+                  className="hero-glitch-title"
+                >
+                  {phrases[currentPhrase].main}<br />
+                  <span style={{ color: 'white', textFillColor: 'initial', WebkitTextFillColor: 'initial' }}>
+                    {phrases[currentPhrase].sub}
+                  </span>
+                </motion.h1>
+              </AnimatePresence>
+            </div>
             <p className="hero-subtitle-3d">
               We engineer the digital backbone of the world's most innovative schools. 
               Deploy your school's future in seconds with our automated cloud infrastructure.

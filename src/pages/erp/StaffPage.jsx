@@ -13,6 +13,7 @@ export default function StaffPage() {
   const [search, setSearch] = useState('')
   const [modal, setModal] = useState(null)
   const [printStaff, setPrintStaff] = useState(null)
+  const [brandingModal, setBrandingModal] = useState(false)
   const [docName, setDocName] = useState('')
   
   const [editData, setEditData] = useState({
@@ -120,9 +121,14 @@ export default function StaffPage() {
           <div className="dash-page-subtitle">{staff.length} staff members | {staff.filter(s=>s.status==='Present').length} present today</div>
         </div>
         <div style={{ display: 'flex', gap: 10 }}>
-          {user?.role==='admin' && <button className="btn btn-secondary" onClick={handleExport}><FiDownload /> Export CSV</button>}
-          {user?.role==='admin' && <button className="btn btn-secondary" onClick={() => navigate(`/${schoolId}/erp/id-card-design`)}><FiShield /> Design ID Cards</button>}
-          {user?.role==='admin' && <button className="btn btn-primary" onClick={openAdd}><FiPlus/> Add Staff</button>}
+          {user?.role==='admin' && (
+            <>
+              <button className="btn btn-secondary" onClick={() => setBrandingModal(true)}><FiImage /> Branding</button>
+              <button className="btn btn-secondary" onClick={handleExport}><FiDownload /> Export CSV</button>
+              <button className="btn btn-secondary" onClick={() => navigate(`/${schoolId}/erp/id-card-design`)}><FiShield /> Design ID Cards</button>
+              <button className="btn btn-primary" onClick={openAdd}><FiPlus/> Add Staff</button>
+            </>
+          )}
         </div>
       </div>
 
@@ -251,6 +257,63 @@ export default function StaffPage() {
                </div>
              )}
             </div>
+          </div>
+        </div>
+      )}
+
+      {/* Global Branding Modal */}
+      {brandingModal && (
+        <div style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.5)', zIndex: 9999, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 16 }} onClick={() => setBrandingModal(false)}>
+          <div style={{ background: 'white', borderRadius: 20, padding: 32, maxWidth: 500, width: '100%' }} onClick={e => e.stopPropagation()}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 20 }}>
+              <h3 style={{ fontWeight: 700, fontSize: 18 }}>Global School Branding</h3>
+              <button type="button" onClick={() => setBrandingModal(false)}><FiX /></button>
+            </div>
+            
+            <div className="form-group">
+              <label className="form-label">School Name</label>
+              <input className="form-input" value={certConfig.schoolName} onChange={e => setCertConfig({ ...certConfig, schoolName: e.target.value })} />
+            </div>
+
+            <div className="form-group">
+              <label className="form-label">School Logo</label>
+              <input type="file" className="form-input" accept="image/*" 
+                onChange={e => {
+                  const file = e.target.files[0]
+                  if (file) {
+                    const reader = new FileReader()
+                    reader.onloadend = () => setCertConfig({ ...certConfig, logoImage: reader.result })
+                    reader.readAsDataURL(file)
+                  }
+                }} 
+              />
+              {certConfig.logoImage && <img src={certConfig.logoImage} style={{ height: 60, marginTop: 10, borderRadius: 4 }} alt="Logo Preview" />}
+            </div>
+
+            <div className="form-group">
+              <label className="form-label">Address</label>
+              <textarea className="form-input" style={{ height: 60 }} value={certConfig.address} onChange={e => setCertConfig({ ...certConfig, address: e.target.value })} />
+            </div>
+
+            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 15 }}>
+              <div className="form-group">
+                <label className="form-label">Phone</label>
+                <input className="form-input" value={certConfig.phone} onChange={e => setCertConfig({ ...certConfig, phone: e.target.value })} />
+              </div>
+              <div className="form-group">
+                <label className="form-label">Email</label>
+                <input className="form-input" value={certConfig.email} onChange={e => setCertConfig({ ...certConfig, email: e.target.value })} />
+              </div>
+            </div>
+
+            <button className="btn btn-primary w-full" style={{ marginTop: 10 }}
+              onClick={() => {
+                localStorage.setItem(`erp_${schoolId}_cert_config`, JSON.stringify(certConfig))
+                setBrandingModal(false)
+                alert('Branding updated successfully!')
+              }}>
+              <FiSave /> Save Global Branding
+            </button>
           </div>
         </div>
       )}

@@ -27,6 +27,7 @@ export default function FeesPage() {
   const [selectedStudent, setSelectedStudent] = useState(null)
   const [search, setSearch] = useState('')
   const [collectModal, setCollectModal] = useState(false)
+  const [brandingModal, setBrandingModal] = useState(false)
   const [printData, setPrintData] = useState(null)
   const [collectTarget, setCollectTarget] = useState('current') // 'current' | session string
   const [configModal, setConfigModal] = useState(false)
@@ -250,9 +251,14 @@ export default function FeesPage() {
         {(isAdmin || isTeacher) && (
           <div style={{ display: 'flex', gap: 10 }}>
             {isAdmin && (
-              <button className="btn btn-secondary btn-sm" onClick={syncFees} title="Recalculate all unpaid balances for this session">
-                <FiRefreshCw /> Recalculate All
-              </button>
+              <>
+                <button className="btn btn-secondary btn-sm" onClick={() => setBrandingModal(true)}>
+                  <FiImage /> Branding
+                </button>
+                <button className="btn btn-secondary btn-sm" onClick={syncFees} title="Recalculate all unpaid balances for this session">
+                  <FiRefreshCw /> Recalculate All
+                </button>
+              </>
             )}
             <button className="btn btn-secondary btn-sm" onClick={handleBulkExport}>
               <FiDownload /> Export CSV
@@ -617,8 +623,7 @@ export default function FeesPage() {
                 <div style={{ textAlign: 'center' }}><div style={{ height: 1, background: '#cbd5e1', marginBottom: 10 }} /><div style={{ fontSize: 12, fontWeight: 700, color: '#0f172a !important' }}>Authorized Signatory</div></div>
               </div>
             </div>
-            </div>
-            {isAdmin && (
+            {user?.role === 'admin' && (
               <div style={{ marginTop: 25, padding: 20, background: 'var(--primary-50)', borderRadius: 12, border: '1px solid var(--primary-200)' }} className="no-print">
                 <div style={{ fontSize: 11, fontWeight: 800, color: 'var(--primary-700)', marginBottom: 12, textTransform: 'uppercase' }}>Update Global School Branding</div>
                 <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 10, marginBottom: 10 }}>
@@ -672,6 +677,63 @@ export default function FeesPage() {
               </button>
               <button className="btn btn-secondary" onClick={() => setPrintData(null)}>Close</button>
             </div>
+          </div>
+        </div>
+      )}
+
+      {/* Branding Modal */}
+      {brandingModal && (
+        <div style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.5)', zIndex: 9999, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 16 }} onClick={() => setBrandingModal(false)}>
+          <div style={{ background: 'white', borderRadius: 20, padding: 32, maxWidth: 500, width: '100%' }} onClick={e => e.stopPropagation()}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 20 }}>
+              <h3 style={{ fontWeight: 700, fontSize: 18 }}>Global School Branding</h3>
+              <button type="button" onClick={() => setBrandingModal(false)}><FiX /></button>
+            </div>
+            
+            <div className="form-group">
+              <label className="form-label">School Name</label>
+              <input className="form-input" value={certConfig.schoolName} onChange={e => setCertConfig({ ...certConfig, schoolName: e.target.value })} />
+            </div>
+
+            <div className="form-group">
+              <label className="form-label">School Logo</label>
+              <input type="file" className="form-input" accept="image/*" 
+                onChange={e => {
+                  const file = e.target.files[0]
+                  if (file) {
+                    const reader = new FileReader()
+                    reader.onloadend = () => setCertConfig({ ...certConfig, logoImage: reader.result })
+                    reader.readAsDataURL(file)
+                  }
+                }} 
+              />
+              {certConfig.logoImage && <img src={certConfig.logoImage} style={{ height: 60, marginTop: 10, borderRadius: 4 }} alt="Logo Preview" />}
+            </div>
+
+            <div className="form-group">
+              <label className="form-label">Address</label>
+              <textarea className="form-input" style={{ height: 60 }} value={certConfig.address} onChange={e => setCertConfig({ ...certConfig, address: e.target.value })} />
+            </div>
+
+            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 15 }}>
+              <div className="form-group">
+                <label className="form-label">Phone</label>
+                <input className="form-input" value={certConfig.phone} onChange={e => setCertConfig({ ...certConfig, phone: e.target.value })} />
+              </div>
+              <div className="form-group">
+                <label className="form-label">Email</label>
+                <input className="form-input" value={certConfig.email} onChange={e => setCertConfig({ ...certConfig, email: e.target.value })} />
+              </div>
+            </div>
+
+            <button className="btn btn-primary w-full" style={{ marginTop: 10 }}
+              onClick={() => {
+                localStorage.setItem(`erp_${schoolId}_cert_config`, JSON.stringify(certConfig))
+                setBrandingModal(false)
+                alert('Branding updated successfully!')
+              }}>
+              <FiSave /> Save Global Branding
+            </button>
           </div>
         </div>
       )}
