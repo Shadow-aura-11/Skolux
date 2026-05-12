@@ -428,6 +428,21 @@ export default function StudentsPage() {
                   )}
                 </div>
               </div>
+
+              {/* Section 8: Portal Credentials (Admin Only) */}
+              {isAdmin && (
+                <div className="detail-section" style={{ background: 'var(--accent-50)', border: '1px solid var(--accent-100)' }}>
+                  <h4 className="section-title" style={{ color: 'var(--accent-800)' }}><FiShield /> Portal Access</h4>
+                  <div className="detail-grid">
+                    <div className="detail-item"><label>Username</label><span style={{ fontWeight: 800, color: 'var(--accent-700)' }}>{selectedStudent.username || 'Not Set'}</span></div>
+                    <div className="detail-item"><label>Password</label><span style={{ fontWeight: 800, color: 'var(--accent-700)' }}>{selectedStudent.password || 'Not Set'}</span></div>
+                  </div>
+                  <button className="btn btn-primary btn-sm w-full" style={{ marginTop: 15, background: 'var(--accent-600)', border: 'none' }} onClick={() => openEdit(selectedStudent)}>
+                    Change Credentials
+                  </button>
+                </div>
+              )}
+            </div>
             </div>
           </div>
         </div>
