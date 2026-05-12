@@ -1,0 +1,16 @@
+{
+  "name": "New Morning Star Public School",
+  "short_name": "NMS School",
+  "description": "Official ERP and Website for New Morning Star Public School",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#ffffff",
+  "theme_color": "#1a56db",
+  "icons": [
+    {
+      "src": "favicon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml"
+    }
+  ]
+}
