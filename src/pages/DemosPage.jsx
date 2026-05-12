@@ -254,7 +254,7 @@ export default function DemosPage() {
                           <span key={f} style={{ fontSize: 12, fontWeight: 800, color: '#94a3b8', background: 'rgba(255,255,255,0.05)', padding: '10px 18px', borderRadius: 8, border: '1px solid rgba(255,255,255,0.05)' }}>{f}</span>
                         ))}
                       </div>
-                      <Link to={demo.url} style={{ 
+                      <a href={`#${demo.url}`} style={{ 
                         width: 'fit-content', 
                         display: 'flex',
                         alignItems: 'center',
@@ -279,7 +279,7 @@ export default function DemosPage() {
                       }}
                       >
                         LIVE PREVIEW <FiExternalLink size={20} />
-                      </Link>
+                      </a>
                     </div>
                   </motion.div>
                 ))}
@@ -302,9 +302,9 @@ export default function DemosPage() {
                     <div style={{ fontSize: 32, color: module.color, marginBottom: 24 }}>{module.icon}</div>
                     <h3 style={{ fontSize: 22, fontWeight: 900, marginBottom: 12 }}>{module.title}</h3>
                     <p style={{ color: '#94a3b8', lineHeight: 1.6, fontSize: 14, marginBottom: 24 }}>{module.desc}</p>
-                    <Link to="/nms/erp" style={{ display: 'flex', alignItems: 'center', gap: 10, color: module.color, textDecoration: 'none', fontWeight: 800, fontSize: 12 }}>
+                    <a href="#/nms/erp" style={{ display: 'flex', alignItems: 'center', gap: 10, color: module.color, textDecoration: 'none', fontWeight: 800, fontSize: 12 }}>
                       LAUNCH MODULE <FiZap />
-                    </Link>
+                    </a>
                   </motion.div>
                 ))}
               </motion.div>

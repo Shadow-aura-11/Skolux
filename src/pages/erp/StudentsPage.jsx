@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react'
-import { useLocation } from 'react-router-dom'
+import { useLocation, useNavigate, useParams } from 'react-router-dom'
 import { useAuth, MOCK_DATA, feeKey, dataKey } from '../../context/AuthContext'
 import { useData } from '../../context/DataContext'
 import { FiUsers, FiPlus, FiSearch, FiEdit2, FiTrash2, FiX, FiCheck, FiFilter, FiUser, FiHome, FiSmartphone, FiCalendar, FiCreditCard, FiDollarSign, FiClock, FiPrinter, FiShield, FiBriefcase, FiHeart, FiMapPin, FiActivity, FiArrowRight, FiDownload, FiFileText, FiRefreshCw, FiPaperclip, FiFile } from 'react-icons/fi'
@@ -9,6 +9,8 @@ import { generatePDF } from '../../utils/pdfUtils'
 export default function StudentsPage() {
   const { user, currentSession, sessions } = useAuth()
   const location = useLocation()
+  const navigate = useNavigate()
+  const { schoolId } = useParams()
   const isAdmin = user?.role === 'admin'
   const isTeacher = user?.role === 'teacher'
   
@@ -224,7 +226,7 @@ export default function StudentsPage() {
           </div>
           <div style={{ display: 'flex', gap: 10 }}>
             {isAdmin && selectedIds.length > 0 && <button className="btn btn-primary" style={{ background: 'var(--accent-600)' }} onClick={() => setPromoteModal(true)}><FiArrowRight /> Promote {selectedIds.length} Students</button>}
-            {isAdmin && <button className="btn btn-secondary" onClick={() => window.location.href='/erp/id-card-design'}><FiShield /> Design ID Cards</button>}
+            {isAdmin && <button className="btn btn-secondary" onClick={() => navigate(`/${schoolId}/erp/id-card-design`)}><FiShield /> Design ID Cards</button>}
             {isAdmin && <button className="btn btn-secondary" onClick={syncStudents} title="Standardize names and IDs for current session"><FiRefreshCw /> Sync Data</button>}
             <button className="btn btn-secondary" onClick={handleExport}><FiDownload /> Export CSV</button>
             <button className="btn btn-primary" onClick={openAdd}><FiPlus /> Add New Student</button>

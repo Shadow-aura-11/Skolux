@@ -1,10 +1,13 @@
 import { useState } from 'react'
+import { useNavigate, useParams } from 'react-router-dom'
 import { useAuth, MOCK_DATA, getSessionStore, saveSessionStore } from '../../context/AuthContext'
 import { useData } from '../../context/DataContext'
 import { FiUsers, FiCheckCircle, FiClock, FiBook, FiCalendar, FiSave, FiPlusCircle, FiCheck, FiX, FiDollarSign } from 'react-icons/fi'
 
 export default function TeacherDashboard() {
   const { user, currentSession } = useAuth()
+  const navigate = useNavigate()
+  const { schoolId } = useParams()
   const [selectedClass, setSelectedClass] = useState('X-A')
   
   // Load live timetable data
@@ -86,14 +89,14 @@ export default function TeacherDashboard() {
       <div className="dash-widget" style={{ marginBottom: 'var(--space-6)', padding: '20px' }}>
         <div className="dash-widget-title" style={{ marginBottom: '15px' }}>Quick Actions</div>
         <div style={{ display: 'flex', gap: '15px', flexWrap: 'wrap' }}>
-          <button className="btn btn-primary" onClick={() => window.location.href='/erp/students?action=add'}>
+          <button className="btn btn-primary" onClick={() => navigate(`/${schoolId}/erp/students?action=add`)}>
             <FiPlusCircle /> Add New Student
           </button>
-          <button className="btn btn-secondary" onClick={() => window.location.href='/erp/students'}>
+          <button className="btn btn-secondary" onClick={() => navigate(`/${schoolId}/erp/students`)}>
             <FiUsers /> Student Directory
           </button>
           <button className="btn btn-secondary" style={{ background: 'var(--accent-50)', color: 'var(--accent-700)', border: '1px solid var(--accent-200)' }} 
-            onClick={() => window.location.href='/erp/fees'}>
+            onClick={() => navigate(`/${schoolId}/erp/fees`)}>
             <FiDollarSign /> Collect Fees
           </button>
         </div>

@@ -411,7 +411,7 @@ export default function QuantumWebsite() {
             {/* 1. OS Bar */}
             <div style={{ padding: '8px 5%', background: 'rgba(255,255,255,0.02)', borderBottom: '1px solid rgba(255,255,255,0.05)', display: 'flex', justifyContent: 'space-between', fontSize: 11, fontWeight: 700, letterSpacing: 1 }}>
               <div style={{ display: 'flex', gap: 20, color: accent }}><span>SYS_STATUS: ONLINE</span><span>LATENCY: 12ms</span><span>LOCATION: GLOBAL_NODE_01</span></div>
-              <div style={{ display: 'flex', gap: 20 }}><span>CBSE_PROTOCOL: VERIFIED</span><Link to="/quantum/erp" style={{ color: 'white', textDecoration: 'none' }}>INIT_ERP_LOGIN</Link></div>
+              <div style={{ display: 'flex', gap: 20 }}><span>CBSE_PROTOCOL: VERIFIED</span><a href="#/quantum/erp" style={{ color: 'white', textDecoration: 'none' }}>INIT_ERP_LOGIN</a></div>
             </div>
 
             {/* 2. Neural Hero */}

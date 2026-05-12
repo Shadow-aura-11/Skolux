@@ -9,7 +9,7 @@ import {
 } from 'react-icons/fi'
 import { useAuth } from '../context/AuthContext'
 import { api } from '../utils/api'
-import { getAllSchools, saveSchoolConfig, deleteSchoolConfig } from '../config/schools'
+import { getAllSchools, saveSchoolConfig, deleteSchoolConfig, initializeSchoolData } from '../config/schools'
 
 export default function AgencyDashboard() {
   const { agencyUser, agencyLogout } = useAuth()
@@ -86,6 +86,11 @@ export default function AgencyDashboard() {
       teacherUsername: formData.teacherUsername,
       teacherPassword: formData.teacherPassword
     })
+
+    // If this is a new deployment, initialize its fresh data set
+    if (!editingSubdomain) {
+      initializeSchoolData(formData.subdomain, formData.name);
+    }
     refreshSchools()
     setShowAddModal(false)
     resetForm()
@@ -237,14 +242,14 @@ export default function AgencyDashboard() {
                   </div>
 
                   <div style={{ marginTop: 24, display: 'flex', gap: 12 }}>
-                    <Link 
-                      to={`/${sub}/erp/dashboard`} 
+                    <a 
+                      href={`#/${sub}/erp/dashboard`} 
                       target="_blank" 
                       rel="noreferrer"
                       style={{ flex: 1, textAlign: 'center', padding: '10px', background: '#f1f5f9', color: '#1e293b', borderRadius: 10, textDecoration: 'none', fontSize: 13, fontWeight: 700, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6 }}
                     >
                       <FiExternalLink size={14} /> View ERP
-                    </Link>
+                    </a>
                   </div>
                 </div>
               ))}

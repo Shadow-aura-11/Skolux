@@ -1,11 +1,14 @@
 import { useState } from 'react'
 import { useAuth } from '../../context/AuthContext'
+import { useNavigate, useParams } from 'react-router-dom'
 import { useData } from '../../context/DataContext'
 import { exportToCSV } from '../../utils/exportUtils'
 import { FiUser, FiSearch, FiPlus, FiEdit2, FiTrash2, FiX, FiSave, FiPhone, FiMail, FiFileText, FiUpload, FiTrash, FiPrinter, FiShield, FiDownload } from 'react-icons/fi'
 
 export default function StaffPage() {
   const { user } = useAuth()
+  const navigate = useNavigate()
+  const { schoolId } = useParams()
   const { staff, updateStaff } = useData()
   const [search, setSearch] = useState('')
   const [modal, setModal] = useState(null)
@@ -112,7 +115,7 @@ export default function StaffPage() {
         </div>
         <div style={{ display: 'flex', gap: 10 }}>
           {user?.role==='admin' && <button className="btn btn-secondary" onClick={handleExport}><FiDownload /> Export CSV</button>}
-          {user?.role==='admin' && <button className="btn btn-secondary" onClick={() => window.location.href='/erp/id-card-design'}><FiShield /> Design ID Cards</button>}
+          {user?.role==='admin' && <button className="btn btn-secondary" onClick={() => navigate(`/${schoolId}/erp/id-card-design`)}><FiShield /> Design ID Cards</button>}
           {user?.role==='admin' && <button className="btn btn-primary" onClick={openAdd}><FiPlus/> Add Staff</button>}
         </div>
       </div>

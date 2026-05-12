@@ -44,9 +44,9 @@ export default function AgencyHeader() {
         {isHome && <a href="#pricing" style={{ fontWeight: 400, fontSize: 14, color: 'white', textDecoration: 'none' }}>Pricing</a>}
         <Link to="/contact" style={{ fontWeight: 400, fontSize: 14, color: location.pathname === '/contact' ? 'var(--primary)' : 'white', textDecoration: 'none' }}>Contact</Link>
         <Link to="/agency/login" style={{ fontWeight: 400, fontSize: 14, color: 'white', textDecoration: 'none' }}>Console</Link>
-        <Link to="/erp" className="btn-3d" style={{ padding: '8px 20px', fontSize: 13, textDecoration: 'none' }}>
+        <a href="#/nms/erp" className="btn-3d" style={{ padding: '8px 20px', fontSize: 13, textDecoration: 'none' }}>
           Live Demo
-        </Link>
+        </a>
       </div>
     </motion.nav>
   )

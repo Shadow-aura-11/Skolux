@@ -74,10 +74,10 @@ export const MOCK_DATA = {
    SESSION UTILITIES
    ────────────────────────────────────────────── */
 
-/** Dynamic prefix for storage based on subdomain */
+/** Dynamic prefix for storage based on subdomain/hash path */
 const getStoragePrefix = () => {
-  const hostname = window.location.hostname;
-  return hostname.split('.')[0] || 'nms';
+  const school = getActiveSchool();
+  return `erp_${school.key || 'nms'}`;
 };
 
 /** Dynamic list of academic sessions */

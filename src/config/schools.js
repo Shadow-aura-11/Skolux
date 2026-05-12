@@ -128,6 +128,57 @@ export const deleteSchoolConfig = (subdomain) => {
 };
 
 /**
+ * Initializes a fresh ERP data set for a new school.
+ * Sets up default sessions, classes, and welcome data.
+ */
+export const initializeSchoolData = (subdomain, schoolName) => {
+  const prefix = `erp_${subdomain}`;
+  const currentSession = '2026-27';
+  
+  // 1. Initial Sessions List
+  localStorage.setItem(`${prefix}_sessions_list`, JSON.stringify(["2025-26", "2026-27"]));
+  localStorage.setItem(`${prefix}_session`, currentSession);
+
+  // 2. Initial Classes & Sections
+  const defaultClasses = [
+    { id: 1, class: 'Nursery', sections: [{ name: 'A', strength: 30 }] },
+    { id: 2, class: 'KG', sections: [{ name: 'A', strength: 30 }] },
+    { id: 3, class: '1st', sections: [{ name: 'A', strength: 30 }] },
+    { id: 4, class: '2nd', sections: [{ name: 'A', strength: 30 }] },
+    { id: 5, class: '3rd', sections: [{ name: 'A', strength: 30 }] },
+    { id: 6, class: '4th', sections: [{ name: 'A', strength: 30 }] },
+    { id: 7, class: '5th', sections: [{ name: 'A', strength: 30 }] }
+  ];
+  localStorage.setItem(`${prefix}_classes_${currentSession}`, JSON.stringify(defaultClasses));
+
+  // 3. Initial Session Data (Notices, Homework, etc.)
+  const initialSessionData = {
+    homework: [],
+    attendance: [],
+    results: {},
+    notices: [
+      { 
+        id: 'welcome', 
+        title: `Welcome to ${schoolName} Digital Portal`, 
+        date: new Date().toISOString().split('T')[0], 
+        category: 'General', 
+        priority: 'high', 
+        desc: `Welcome to the new academic session. This portal is now active for ${schoolName}.` 
+      }
+    ],
+    feeStats: { collected: 0, pending: 0, overdue: 0, total: 0 }
+  };
+  localStorage.setItem(`${prefix}_session_data_${currentSession}`, JSON.stringify(initialSessionData));
+
+  // 4. Initial Fee Config
+  const feeConfig = {
+    classFees: { 'Nursery': 25000, 'KG': 25000, '1st': 30000, '2nd': 30000, '3rd': 35000, '4th': 35000, '5th': 40000 },
+    transportFees: { 'Route 1': 12000, 'Route 2': 15000 }
+  };
+  localStorage.setItem(`${prefix}_global_fee_config`, JSON.stringify(feeConfig));
+};
+
+/**
  * Detects the current school based on the URL path.
  * Format: domain.com/schoolId/erp
  */

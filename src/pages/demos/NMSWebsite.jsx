@@ -712,7 +712,7 @@ export default function NMSWebsite() {
           <span style={{ display: 'flex', alignItems: 'center', gap: 8 }}><FiMail color={accent} /> info@nms.edu.in</span>
         </div>
         <div style={{ display: 'flex', gap: 25 }}>
-          <Link to="/nms/erp" style={{ color: 'white', textDecoration: 'none' }}>ERP PORTAL LOGIN</Link>
+          <a href="#/nms/erp" style={{ color: 'white', textDecoration: 'none' }}>ERP PORTAL LOGIN</a>
           <span style={{ color: accent }}>CBSE AFFILIATION NO: 1234567</span>
         </div>
       </div>

@@ -496,7 +496,7 @@ export default function StarlightWebsite() {
             <span key={t} style={{ cursor: 'pointer', color: activeTab === t ? pink : '#94a3b8' }} onClick={() => setActiveTab(t)}>{t.toUpperCase()}</span>
           ))}
         </div>
-        <Link to="/starlight/erp" style={{ background: yellow, color: 'white', padding: '10px 25px', borderRadius: 100, fontWeight: 900, fontSize: 12, textDecoration: 'none' }}>ERP LOGIN</Link>
+        <a href="#/starlight/erp" style={{ background: yellow, color: 'white', padding: '10px 25px', borderRadius: 100, fontWeight: 900, fontSize: 12, textDecoration: 'none' }}>ERP LOGIN</a>
       </nav>
 
       <AnimatePresence mode="wait">{renderContent()}</AnimatePresence>
