@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react'
-import { useNavigate } from 'react-router-dom'
+import { useNavigate, Link } from 'react-router-dom'
 import { motion } from 'framer-motion'
 import { 
   FiPlus, FiTrash2, FiEdit2, FiGlobe, FiLogOut, 
@@ -237,14 +237,14 @@ export default function AgencyDashboard() {
                   </div>
 
                   <div style={{ marginTop: 24, display: 'flex', gap: 12 }}>
-                    <a 
-                      href={`/${sub}/erp`} 
+                    <Link 
+                      to={`/${sub}/erp`} 
                       target="_blank" 
                       rel="noreferrer"
                       style={{ flex: 1, textAlign: 'center', padding: '10px', background: '#f1f5f9', color: '#1e293b', borderRadius: 10, textDecoration: 'none', fontSize: 13, fontWeight: 700, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6 }}
                     >
                       <FiExternalLink size={14} /> View ERP
-                    </a>
+                    </Link>
                   </div>
                 </div>
               ))}
