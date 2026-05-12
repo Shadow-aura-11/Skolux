@@ -93,9 +93,11 @@ export default function HomeworkPage() {
             <div className="form-group">
               <label className="form-label">Target Class & Section</label>
               <select className="form-select" value={newHw.class} onChange={e => setNewHw({ ...newHw, class: e.target.value })}>
-                {allAvailableClasses.map(c => (
-                  <optgroup key={c} label={`Class ${c}`}>
-                    {['A', 'B', 'C', 'D'].map(s => <option key={`${c}-${s}`} value={`${c}-${s}`}>{c}-{s}</option>)}
+                {erpClasses.map(c => (
+                  <optgroup key={c.class} label={`Class ${c.class}`}>
+                    {c.sections.map(s => (
+                      <option key={`${c.class}-${s.name}`} value={`${c.class}-${s.name}`}>{c.class}-{s.name}</option>
+                    ))}
                   </optgroup>
                 ))}
               </select>

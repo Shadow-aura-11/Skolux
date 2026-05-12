@@ -67,6 +67,8 @@ export default function SettingsPage() {
   const [addClassModal, setAddClassModal] = useState(false)
   const [newClass, setNewClass] = useState({ name: '', sections: [{ name: 'A', teacher: '' }], subjects: [] })
   const [newSubjectInput, setNewSubjectInput] = useState({})
+  const [editClassIdx, setEditClassIdx] = useState(null)
+  const [editRouteIdx, setEditRouteIdx] = useState(null)
 
   useEffect(() => {
     const savedFee = localStorage.getItem(`erp_${schoolId}_global_fee_config_${currentSession}`) || localStorage.getItem(`erp_${schoolId}_global_fee_config`)
@@ -175,10 +177,32 @@ export default function SettingsPage() {
   }
 
   const handleClassSave = () => {
-    const updated = [...classes, { class: newClass.name, sections: newClass.sections, subjects: ['English', 'Hindi', 'Mathematics', 'Science', 'Social Sc.'] }]
+    if (!newClass.name) return alert('Class name is required')
+    const classData = { 
+      class: newClass.name, 
+      sections: newClass.sections, 
+      subjects: newClass.subjects.length > 0 ? newClass.subjects : ['English', 'Hindi', 'Mathematics', 'Science', 'Social Sc.'] 
+    }
+    
+    let updated
+    if (editClassIdx !== null) {
+      updated = [...classes]
+      updated[editClassIdx] = classData
+    } else {
+      updated = [...classes, classData]
+    }
+    
     updateClasses(updated)
     setAddClassModal(false)
+    setEditClassIdx(null)
     setNewClass({ name: '', sections: [{ name: 'A', teacher: '' }], subjects: [] })
+  }
+
+  const openEditClass = (idx) => {
+    const c = classes[idx]
+    setNewClass({ name: c.class, sections: [...c.sections], subjects: [...(c.subjects || [])] })
+    setEditClassIdx(idx)
+    setAddClassModal(true)
   }
 
   const deleteClass = (idx) => {
@@ -207,10 +231,24 @@ export default function SettingsPage() {
   }
 
   const handleRouteSave = () => {
-    const updated = [...transportRoutes, newRoute]
+    if (!newRoute.route) return alert('Route name is required')
+    let updated
+    if (editRouteIdx !== null) {
+      updated = [...transportRoutes]
+      updated[editRouteIdx] = newRoute
+    } else {
+      updated = [...transportRoutes, newRoute]
+    }
     updateTransportRoutes(updated)
     setAddRouteModal(false)
+    setEditRouteIdx(null)
     setNewRoute({ route: '', vehicle: '', driver: '', phone: '' })
+  }
+
+  const openEditRoute = (idx) => {
+    setNewRoute({ ...transportRoutes[idx] })
+    setEditRouteIdx(idx)
+    setAddRouteModal(true)
   }
 
   const deleteRoute = (idx) => {
@@ -634,7 +672,7 @@ export default function SettingsPage() {
                     <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 15 }}>
                       <span style={{ fontWeight: 800, color: 'var(--primary-700)', fontSize: 16 }}>Class {c.class}</span>
                       <div style={{ display: 'flex', gap: 10 }}>
-                        <button className="btn btn-sm btn-secondary" style={{ padding: 4 }}><FiEdit2 size={12} /></button>
+                        <button className="btn btn-sm btn-secondary" style={{ padding: 4 }} onClick={() => openEditClass(i)}><FiEdit2 size={12} /></button>
                         <button className="btn btn-sm btn-secondary" style={{ padding: 4, color: 'var(--error)' }} onClick={() => deleteClass(i)}><FiTrash2 size={12} /></button>
                       </div>
                     </div>
@@ -678,8 +716,8 @@ export default function SettingsPage() {
                 <div style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.5)', zIndex: 9999, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 20 }} onClick={() => setAddClassModal(false)}>
                   <div style={{ background: 'white', borderRadius: 20, padding: 32, maxWidth: 500, width: '100%' }} onClick={e => e.stopPropagation()}>
                     <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 20 }}>
-                      <h3 style={{ fontWeight: 700 }}>Add New Class</h3>
-                      <button onClick={() => setAddClassModal(false)}><FiX /></button>
+                      <h3 style={{ fontWeight: 700 }}>{editClassIdx !== null ? 'Edit Class' : 'Add New Class'}</h3>
+                      <button onClick={() => { setAddClassModal(false); setEditClassIdx(null); }}><FiX /></button>
                     </div>
 
                     <div className="form-group">
@@ -688,17 +726,37 @@ export default function SettingsPage() {
                     </div>
 
                     <div className="form-group">
-                      <label className="form-label">Initial Section (Optional)</label>
-                      <input className="form-input" placeholder="e.g. A" value={newClass.sections[0].name} onChange={e => {
-                        const updatedSec = [...newClass.sections]
-                        updatedSec[0].name = e.target.value
-                        setNewClass({...newClass, sections: updatedSec})
-                      }} />
+                      <label className="form-label" style={{ display: 'flex', justifyContent: 'space-between' }}>
+                        Sections 
+                        <button className="btn btn-sm btn-secondary" style={{ height: 'auto', padding: '2px 8px' }} onClick={() => setNewClass({...newClass, sections: [...newClass.sections, { name: '', teacher: '' }]})}><FiPlus size={10} /> Add</button>
+                      </label>
+                      <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
+                        {newClass.sections.map((sec, idx) => (
+                          <div key={idx} style={{ display: 'flex', gap: 8 }}>
+                            <input className="form-input" style={{ width: 60 }} placeholder="Name" value={sec.name} onChange={e => {
+                              const updated = [...newClass.sections]
+                              updated[idx].name = e.target.value
+                              setNewClass({...newClass, sections: updated})
+                            }} />
+                            <input className="form-input" style={{ flex: 1 }} placeholder="Teacher Name" value={sec.teacher} onChange={e => {
+                              const updated = [...newClass.sections]
+                              updated[idx].teacher = e.target.value
+                              setNewClass({...newClass, sections: updated})
+                            }} />
+                            {newClass.sections.length > 1 && (
+                              <button className="btn btn-sm btn-secondary" style={{ color: 'var(--error)' }} onClick={() => {
+                                const updated = newClass.sections.filter((_, i) => i !== idx)
+                                setNewClass({...newClass, sections: updated})
+                              }}><FiTrash2 size={12} /></button>
+                            )}
+                          </div>
+                        ))}
+                      </div>
                     </div>
 
-                    <div style={{ display: 'flex', gap: 12, marginTop: 20 }}>
+                    <div style={{ display: 'flex', gap: 12, marginTop: 30 }}>
                       <button className="btn btn-primary" style={{ flex: 1 }} onClick={handleClassSave}>Save Class</button>
-                      <button className="btn btn-secondary" onClick={() => setAddClassModal(false)}>Cancel</button>
+                      <button className="btn btn-secondary" onClick={() => { setAddClassModal(false); setEditClassIdx(null); }}>Cancel</button>
                     </div>
                   </div>
                 </div>
@@ -729,7 +787,10 @@ export default function SettingsPage() {
                         <div style={{ fontWeight: 800, color: 'var(--primary-700)', fontSize: 16 }}>{r.route}</div>
                         <div style={{ fontSize: 12, color: 'var(--gray-500)' }}>{r.vehicle} • {r.driver}</div>
                       </div>
-                      <button className="btn btn-sm btn-secondary" style={{ color: 'var(--error)' }} onClick={() => deleteRoute(i)}><FiTrash2 size={14} /></button>
+                      <div style={{ display: 'flex', gap: 8 }}>
+                        <button className="btn btn-sm btn-secondary" onClick={() => openEditRoute(i)}><FiEdit2 size={14} /></button>
+                        <button className="btn btn-sm btn-secondary" style={{ color: 'var(--error)' }} onClick={() => deleteRoute(i)}><FiTrash2 size={14} /></button>
+                      </div>
                     </div>
                     <div style={{ display: 'flex', alignItems: 'center', gap: 8, fontSize: 13, color: 'var(--gray-600)' }}>
                       <FiSmartphone size={14} /> {r.phone || 'No phone provided'}
@@ -741,7 +802,7 @@ export default function SettingsPage() {
               {addRouteModal && (
                 <div style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.5)', zIndex: 9999, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 20 }} onClick={() => setAddRouteModal(false)}>
                   <div style={{ background: 'white', borderRadius: 20, padding: 32, maxWidth: 500, width: '100%' }} onClick={e => e.stopPropagation()}>
-                    <h3 style={{ fontWeight: 700, marginBottom: 20 }}>Add New Route</h3>
+                    <h3 style={{ fontWeight: 700, marginBottom: 20 }}>{editRouteIdx !== null ? 'Edit Route' : 'Add New Route'}</h3>
                     <div className="form-group">
                       <label className="form-label">Route/Location Name</label>
                       <input className="form-input" placeholder="e.g. Sector 12, Main Market" value={newRoute.route} onChange={e => setNewRoute({...newRoute, route: e.target.value})} />
@@ -760,7 +821,7 @@ export default function SettingsPage() {
                     </div>
                     <div style={{ display: 'flex', gap: 12, marginTop: 20 }}>
                       <button className="btn btn-primary" style={{ flex: 1 }} onClick={handleRouteSave}>Save Route</button>
-                      <button className="btn btn-secondary" onClick={() => setAddRouteModal(false)}>Cancel</button>
+                      <button className="btn btn-secondary" onClick={() => { setAddRouteModal(false); setEditRouteIdx(null); }}>Cancel</button>
                     </div>
                   </div>
                 </div>

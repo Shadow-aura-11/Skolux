@@ -483,7 +483,9 @@ export default function StudentsPage() {
                       </div>
                       <div className="form-group"><label>Section</label>
                         <select className="form-select" value={formData.section} onChange={e => setFormData({...formData, section: e.target.value})}>
-                          {['A', 'B', 'C', 'D'].map(s => <option key={s} value={s}>{s}</option>)}
+                          {globalClasses.find(c => c.class === formData.class)?.sections?.map(s => (
+                            <option key={s.name} value={s.name}>{s.name}</option>
+                          )) || <option value="A">A</option>}
                         </select>
                       </div>
                       <div className="form-group"><label>Student ID {selectedStudent ? '' : '(Auto)'}</label><input className="form-input" value={formData.admissionNo} readOnly={!selectedStudent} style={selectedStudent ? {} : { background: 'var(--gray-50)', cursor: 'not-allowed' }} /></div>
@@ -559,7 +561,7 @@ export default function StudentsPage() {
                           <option value="">Select Route...</option>
                           <option value="None">None (Self)</option>
                           {transportRoutes.map(tr => (
-                            <option key={tr.route} value={tr.route}>{tr.route} (Bus {tr.bus})</option>
+                            <option key={tr.route} value={tr.route}>{tr.route} ({tr.vehicle})</option>
                           ))}
                         </select>
                       </div>

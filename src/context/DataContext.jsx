@@ -257,11 +257,13 @@ export function DataProvider({ children }) {
       setClasses(d); 
       api.save('classes', d, currentSession);
       localStorage.setItem(getStoreKey('classes', currentSession), JSON.stringify(d));
+      localStorage.setItem(getStoreKey('classes'), JSON.stringify(d));
     },
     transportRoutes, updateTransportRoutes: (d) => { 
       setTransportRoutes(d);
       api.save('transport', d, currentSession); 
       localStorage.setItem(getStoreKey('transport', currentSession), JSON.stringify(d));
+      localStorage.setItem(getStoreKey('transport'), JSON.stringify(d));
     },
     refreshData,
     loading
