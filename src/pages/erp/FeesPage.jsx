@@ -10,7 +10,7 @@ export default function FeesPage() {
   const { user, currentSession, sessions } = useAuth()
   const { schoolId } = useParams()
   const { students, refreshData, classes = [], transportRoutes = [] } = useData()
-  const certConfig = JSON.parse(localStorage.getItem(`erp_${schoolId}_cert_config`) || '{}')
+  const certConfig = JSON.parse(localStorage.getItem(`erp_${schoolId}_cert_config`) || '{"schoolName":"NEW MORNING STAR PUBLIC SCHOOL", "address":"Subhash Nagar, New Delhi", "phone":"+91 98765 43210"}')
 
   const syncFees = () => {
     if (!window.confirm(`Recalculate all fee balances for the CURRENT session (${currentSession})? This will fix any balance discrepancies across all students.`)) return
@@ -31,6 +31,7 @@ export default function FeesPage() {
   const [collectTarget, setCollectTarget] = useState('current') // 'current' | session string
   const [configModal, setConfigModal] = useState(false)
   const [feeConfig, setFeeConfig] = useState({ classFee: 0, transportFee: 0 })
+  const [receiptHeader, setReceiptHeader] = useState({ name: '', address: '', phone: '' })
   
   const [filterClass, setFilterClass] = useState('')
   const [filterStatus, setFilterStatus] = useState('')
@@ -468,10 +469,13 @@ export default function FeesPage() {
                             <td style={{ fontSize: 12, color: 'var(--gray-500)', maxWidth: 120, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{h.remarks || '-'}</td>
                             <td>
                                <div style={{ display: 'flex', gap: 6 }}>
-                                 <button className="btn btn-sm" style={{ padding: 4, background: 'var(--gray-50)' }}
-                                   onClick={() => setPrintData({ ...h, studentName: selectedStudent.name, studentId: selectedStudent.id, class: selectedStudent.class, rollNo: selectedStudent.rollNo })}>
-                                   <FiPrinter size={14} color="var(--gray-500)" />
-                                 </button>
+                                   <button className="btn btn-sm" style={{ padding: 4, background: 'var(--gray-50)' }}
+                                     onClick={() => {
+                                       setPrintData({ ...h, studentName: selectedStudent.name, studentId: selectedStudent.id, class: selectedStudent.class, rollNo: selectedStudent.rollNo });
+                                       setReceiptHeader({ name: certConfig.schoolName, address: certConfig.address, phone: certConfig.phone });
+                                     }}>
+                                     <FiPrinter size={14} color="var(--gray-500)" />
+                                   </button>
                                  {isAdmin && (
                                    <button className="btn btn-sm" style={{ padding: 4, background: 'var(--error-50)' }}
                                      onClick={() => handleDeleteTransaction(h)}>
@@ -574,8 +578,8 @@ export default function FeesPage() {
             <div id="receipt-print-area" style={{ background: 'white !important', color: '#1e293b !important', boxShadow: 'inset 0 0 0 1000px white !important' }}>
               <div style={{ borderBottom: '2px solid #1e293b', paddingBottom: 20, marginBottom: 30, textAlign: 'center' }}>
                 {certConfig.logoImage && <img src={certConfig.logoImage} style={{ height: 50, marginBottom: 10, display: 'block', margin: '0 auto' }} />}
-                <h1 style={{ fontSize: 22, fontWeight: 800, color: '#1e40af !important' }}>{certConfig.schoolName || 'NEW MORNING STAR PUBLIC SCHOOL'}</h1>
-                <p style={{ fontSize: 12, color: '#64748b !important', marginTop: 4 }}>{certConfig.address} | {certConfig.phone}</p>
+                <h1 style={{ fontSize: 22, fontWeight: 800, color: '#1e40af !important' }}>{receiptHeader.name || certConfig.schoolName}</h1>
+                <p style={{ fontSize: 12, color: '#64748b !important', marginTop: 4 }}>{receiptHeader.address || certConfig.address} | {receiptHeader.phone || certConfig.phone}</p>
                 <div style={{ display: 'inline-block', padding: '4px 15px', background: '#1e293b !important', boxShadow: 'inset 0 0 0 1000px #1e293b !important', color: 'white !important', fontSize: 11, fontWeight: 700, marginTop: 15, borderRadius: 4, WebkitPrintColorAdjust: 'exact' }}>FEE RECEIPT</div>
               </div>
               <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 30, marginBottom: 25 }}>
@@ -613,7 +617,25 @@ export default function FeesPage() {
                 <div style={{ textAlign: 'center' }}><div style={{ height: 1, background: '#cbd5e1', marginBottom: 10 }} /><div style={{ fontSize: 12, fontWeight: 700, color: '#0f172a !important' }}>Authorized Signatory</div></div>
               </div>
             </div>
-            <div style={{ display: 'flex', gap: 15, marginTop: 30 }} className="no-print">
+            </div>
+            <div style={{ marginTop: 25, padding: 20, background: 'var(--gray-50)', borderRadius: 12, border: '1px solid var(--gray-200)' }} className="no-print">
+              <div style={{ fontSize: 11, fontWeight: 800, color: 'var(--gray-600)', marginBottom: 12, textTransform: 'uppercase' }}>Edit Receipt Header (For this print)</div>
+              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 10, marginBottom: 10 }}>
+                <div className="form-group" style={{ marginBottom: 0 }}>
+                  <label className="form-label" style={{ fontSize: 10 }}>School Name</label>
+                  <input className="form-input" style={{ height: 32, fontSize: 12 }} value={receiptHeader.name} onChange={e => setReceiptHeader({ ...receiptHeader, name: e.target.value })} />
+                </div>
+                <div className="form-group" style={{ marginBottom: 0 }}>
+                  <label className="form-label" style={{ fontSize: 10 }}>Contact Info</label>
+                  <input className="form-input" style={{ height: 32, fontSize: 12 }} value={receiptHeader.phone} onChange={e => setReceiptHeader({ ...receiptHeader, phone: e.target.value })} />
+                </div>
+              </div>
+              <div className="form-group" style={{ marginBottom: 0 }}>
+                <label className="form-label" style={{ fontSize: 10 }}>Address</label>
+                <input className="form-input" style={{ height: 32, fontSize: 12 }} value={receiptHeader.address} onChange={e => setReceiptHeader({ ...receiptHeader, address: e.target.value })} />
+              </div>
+            </div>
+            <div style={{ display: 'flex', gap: 15, marginTop: 20 }} className="no-print">
               <button className="btn btn-primary" style={{ flex: 1 }} onClick={() => generatePDF('receipt-print-area', `Receipt_${printData.id}.pdf`)}>
                 <FiPrinter /> Download PDF Receipt
               </button>
