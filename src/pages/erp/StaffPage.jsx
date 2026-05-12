@@ -3,7 +3,7 @@ import { useAuth } from '../../context/AuthContext'
 import { useNavigate, useParams } from 'react-router-dom'
 import { useData } from '../../context/DataContext'
 import { exportToCSV } from '../../utils/exportUtils'
-import { FiUser, FiSearch, FiPlus, FiEdit2, FiTrash2, FiX, FiSave, FiPhone, FiMail, FiFileText, FiUpload, FiTrash, FiPrinter, FiShield, FiDownload } from 'react-icons/fi'
+import { FiUser, FiSearch, FiPlus, FiEdit2, FiTrash2, FiX, FiSave, FiPhone, FiMail, FiFileText, FiUpload, FiTrash, FiPrinter, FiShield, FiDownload, FiImage } from 'react-icons/fi'
 
 export default function StaffPage() {
   const { user } = useAuth()
@@ -256,7 +256,6 @@ export default function StaffPage() {
                  </button>
                </div>
              )}
-            </div>
           </div>
         </div>
       )}

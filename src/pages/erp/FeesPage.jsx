@@ -2,7 +2,7 @@ import { useState, useMemo } from 'react'
 import { useLocation, useNavigate, useParams } from 'react-router-dom'
 import { useAuth, MOCK_DATA, feeKey, getPreviousSessionsDue } from '../../context/AuthContext'
 import { useData } from '../../context/DataContext'
-import { FiDollarSign, FiSearch, FiCheckCircle, FiClock, FiAlertCircle, FiPlus, FiPrinter, FiX, FiTag, FiAlertTriangle, FiDownload, FiRefreshCw, FiTruck, FiTrash2 } from 'react-icons/fi'
+import { FiDollarSign, FiSearch, FiCheckCircle, FiClock, FiAlertCircle, FiPlus, FiPrinter, FiX, FiTag, FiAlertTriangle, FiDownload, FiRefreshCw, FiTruck, FiTrash2, FiImage, FiSave } from 'react-icons/fi'
 import { exportToCSV } from '../../utils/exportUtils'
 import { generatePDF } from '../../utils/pdfUtils'
 
