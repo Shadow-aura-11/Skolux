@@ -1,5 +1,6 @@
 import { useState, useMemo, useEffect } from 'react'
 import { useAuth, MOCK_DATA } from '../../context/AuthContext'
+import { useParams } from 'react-router-dom'
 import { useData } from '../../context/DataContext'
 import { 
   FiClock, FiCalendar, FiUsers, FiTrendingUp, FiCheckCircle, 
@@ -34,6 +35,7 @@ const to24h = (t12) => {
 
 export default function StaffAttendancePage() {
   const { user } = useAuth()
+  const { schoolId } = useParams()
   const { staff = MOCK_DATA.staff } = useData() || {}
   
   const [selectedDate, setSelectedDate] = useState(new Date().toISOString().split('T')[0])
@@ -44,14 +46,14 @@ export default function StaffAttendancePage() {
 
   // Simulated Biometric Logs for the selected date
   const [biometricLogs, setBiometricLogs] = useState(() => {
-    const saved = localStorage.getItem(`nms_biometric_${selectedDate}`)
+    const saved = localStorage.getItem(`erp_${schoolId}_biometric_${selectedDate}`)
     return saved ? JSON.parse(saved) : {}
   })
 
   useEffect(() => {
-    const saved = localStorage.getItem(`nms_biometric_${selectedDate}`)
+    const saved = localStorage.getItem(`erp_${schoolId}_biometric_${selectedDate}`)
     setBiometricLogs(saved ? JSON.parse(saved) : {})
-  }, [selectedDate])
+  }, [selectedDate, schoolId])
 
   const filteredStaff = useMemo(() => {
     return staff.filter(s => {
@@ -72,7 +74,7 @@ export default function StaffAttendancePage() {
     }
     
     setBiometricLogs(newLogs)
-    localStorage.setItem(`nms_biometric_${selectedDate}`, JSON.stringify(newLogs))
+    localStorage.setItem(`erp_${schoolId}_biometric_${selectedDate}`, JSON.stringify(newLogs))
   }
 
   const handleTimeChange = (staffId, field, value) => {
@@ -81,7 +83,7 @@ export default function StaffAttendancePage() {
     
     newLogs[staffId] = { ...current, [field]: value }
     setBiometricLogs(newLogs)
-    localStorage.setItem(`nms_biometric_${selectedDate}`, JSON.stringify(newLogs))
+    localStorage.setItem(`erp_${schoolId}_biometric_${selectedDate}`, JSON.stringify(newLogs))
   }
 
   const handleSync = () => {
@@ -107,7 +109,7 @@ export default function StaffAttendancePage() {
         }
       })
       setBiometricLogs(newLogs)
-      localStorage.setItem(`nms_biometric_${selectedDate}`, JSON.stringify(newLogs))
+      localStorage.setItem(`erp_${schoolId}_biometric_${selectedDate}`, JSON.stringify(newLogs))
       setIsSyncing(false)
     }, 1500)
   }
@@ -136,7 +138,7 @@ export default function StaffAttendancePage() {
       const isWeekend = date.getDay() === 0 // Sunday
       
       // 1. Try to load actual log from database/localStorage
-      const saved = localStorage.getItem(`nms_biometric_${dateStr}`)
+      const saved = localStorage.getItem(`erp_${schoolId}_biometric_${dateStr}`)
       const logs = saved ? JSON.parse(saved) : {}
       const log = logs[viewingReport.id]
 

@@ -1,11 +1,13 @@
 import { useState, useMemo } from 'react'
 import { useAuth, MOCK_DATA } from '../../context/AuthContext'
+import { useParams } from 'react-router-dom'
 import { useData } from '../../context/DataContext'
 import { FiArrowUp, FiFilter, FiUser, FiCheckCircle, FiXCircle, FiSave, FiAlertCircle, FiChevronRight, FiUsers } from 'react-icons/fi'
 import { formatDate } from '../../utils/exportUtils'
 
 export default function PromotionPage() {
-  const { user } = useAuth()
+  const { user, currentSession, sessions } = useAuth()
+  const { schoolId } = useParams()
   const isAdmin = user?.role === 'admin'
   
   const { students, updateStudents } = useData()
@@ -55,12 +57,12 @@ export default function PromotionPage() {
     if (promotionResults.length === 0) return
     if (!destSession) return alert('Please select a destination session.')
 
-    const destStudentsKey = `nms_students_${destSession}`
-    const destFeesKey = `nms_fees_${destSession}`
+    const destStudentsKey = `erp_${schoolId}_students_${destSession}`
+    const destFeesKey = `erp_${schoolId}_fees_${destSession}`
     
     const targetStudents = JSON.parse(localStorage.getItem(destStudentsKey) || '[]')
     const targetFees = JSON.parse(localStorage.getItem(destFeesKey) || '{}')
-    const currentFees = JSON.parse(localStorage.getItem(`nms_fees_${currentSession}`) || '{}')
+    const currentFees = JSON.parse(localStorage.getItem(`erp_${schoolId}_fees_${currentSession}`) || '{}')
     
     let promotedCount = 0
 

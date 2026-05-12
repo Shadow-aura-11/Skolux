@@ -25,14 +25,14 @@ export default function ExamsPage() {
 
   // Dynamic Exam Settings
   const examTypes = useMemo(() => {
-    const saved = localStorage.getItem(`nms_exam_types_${currentSession}`)
+    const saved = localStorage.getItem(`erp_${schoolId}_exam_types_${currentSession}`)
     return saved ? JSON.parse(saved) : ['FA1', 'FA2', 'SA1', 'FA3', 'FA4', 'SA2']
-  }, [currentSession])
+  }, [currentSession, schoolId])
 
   const examConfig = useMemo(() => {
-    const saved = localStorage.getItem(`nms_exam_config_${currentSession}`)
+    const saved = localStorage.getItem(`erp_${schoolId}_exam_config_${currentSession}`)
     return saved ? JSON.parse(saved) : {}
-  }, [currentSession])
+  }, [currentSession, schoolId])
 
   useEffect(() => {
     if (examTypes.length > 0 && !selectedExam) setSelectedExam(examTypes[0])
@@ -44,8 +44,8 @@ export default function ExamsPage() {
 
   // Derived Data
   const globalClasses = useMemo(() => {
-    return JSON.parse(localStorage.getItem(`nms_classes_${currentSession}`) || localStorage.getItem('nms_classes') || '[]')
-  }, [currentSession])
+    return JSON.parse(localStorage.getItem(`erp_${schoolId}_classes_${currentSession}`) || localStorage.getItem(`erp_${schoolId}_classes`) || '[]')
+  }, [currentSession, schoolId])
 
   const classes = globalClasses.length > 0 ? globalClasses.map(c => c.class) : ['UKG', '1st', '2nd', '3rd', '4th', '5th', '6th', '7th', '8th', '9th', '10th']
   const selectedClassObj = globalClasses.find(c => c.class === selectedClass)

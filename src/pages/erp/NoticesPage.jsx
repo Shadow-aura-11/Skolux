@@ -1,15 +1,17 @@
 import { useState } from 'react'
 import { useAuth, MOCK_DATA } from '../../context/AuthContext'
+import { useParams } from 'react-router-dom'
 import { FiBell, FiPlus, FiEdit2, FiTrash2, FiX, FiSave } from 'react-icons/fi'
 
 export default function NoticesPage() {
   const { user } = useAuth()
-  const [notices, setNotices] = useState(() => { const s = localStorage.getItem('nms_notices'); return s ? JSON.parse(s) : MOCK_DATA.notices })
+  const { schoolId } = useParams()
+  const [notices, setNotices] = useState(() => { const s = localStorage.getItem(`erp_${schoolId}_notices`); return s ? JSON.parse(s) : MOCK_DATA.notices })
   const [modal, setModal] = useState(null)
   const [editData, setEditData] = useState({id:0,title:'',date:'',category:'Academic',priority:'medium'})
   const isAdmin = user?.role === 'admin' || user?.role === 'teacher'
-
-  const save = d => { localStorage.setItem('nms_notices', JSON.stringify(d)); setNotices(d) }
+  
+  const save = d => { localStorage.setItem(`erp_${schoolId}_notices`, JSON.stringify(d)); setNotices(d) }
   const openAdd = () => { setEditData({id: Date.now(), title:'', date: new Date().toISOString().split('T')[0], category:'Academic', priority:'medium'}); setModal('add') }
   const openEdit = n => { setEditData({...n}); setModal('edit') }
   const handleSave = () => {

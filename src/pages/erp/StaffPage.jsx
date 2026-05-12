@@ -23,7 +23,7 @@ export default function StaffPage() {
   })
 
   const [customDesignation, setCustomDesignation] = useState(false)
-  const idConfig = JSON.parse(localStorage.getItem('nms_id_config') || '{"schoolName":"NEW MORNING STAR PUBLIC SCHOOL","themeColor":"#4f46e5","textColor":"#ffffff","showQr":true,"showSign":true,"cardType":"vertical","borderRadius":12,"headerHeight":60}')
+  const idConfig = JSON.parse(localStorage.getItem(`erp_${schoolId}_id_config`) || '{"schoolName":"NEW MORNING STAR PUBLIC SCHOOL","themeColor":"#4f46e5","textColor":"#ffffff","showQr":true,"showSign":true,"cardType":"vertical","borderRadius":12,"headerHeight":60}')
 
   const filtered = staff.filter(s => 
     s.name.toLowerCase().includes(search.toLowerCase()) || 

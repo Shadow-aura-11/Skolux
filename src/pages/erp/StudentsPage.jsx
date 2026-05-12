@@ -165,14 +165,14 @@ export default function StudentsPage() {
 
   const openAdd = () => {
     setSelectedStudent(null)
-    const nextIdNum = parseInt(localStorage.getItem('nms_stu_id_counter') || '0') + 1
+    const nextIdNum = parseInt(localStorage.getItem(`erp_${schoolId}_stu_id_counter`) || '0') + 1
     const nextId = `STU${String(nextIdNum).padStart(3, '0')}`
     setFormData({ ...initialFormData, admissionNo: nextId, admissionDate: new Date().toISOString().split('T')[0] })
     setModalOpen(true)
   }
 
   const getFeeRecordsForSession = () => {
-    const stored = localStorage.getItem(`nms_fees_${currentSession}`)
+    const stored = localStorage.getItem(`erp_${schoolId}_fees_${currentSession}`)
     return stored ? JSON.parse(stored) : {}
   }
 
@@ -859,13 +859,13 @@ export default function StudentsPage() {
                 }
               })
 
-              const existingNextSession = JSON.parse(localStorage.getItem(`nms_students_${targetSession}`) || '[]')
+              const existingNextSession = JSON.parse(localStorage.getItem(`erp_${schoolId}_students_${targetSession}`) || '[]')
               const updatedNextSession = [...existingNextSession, ...promotedStudents]
               
               // Remove duplicates by ID
               const uniqueUpdated = Array.from(new Map(updatedNextSession.map(item => [item.id, item])).values())
               
-              localStorage.setItem(`nms_students_${targetSession}`, JSON.stringify(uniqueUpdated))
+              localStorage.setItem(`erp_${schoolId}_students_${targetSession}`, JSON.stringify(uniqueUpdated))
               localStorage.setItem(feeKey(targetSession), JSON.stringify(nextFees))
               alert(`Successfully promoted ${selectedIds.length} students to Session ${targetSession}`)
               setPromoteModal(false)

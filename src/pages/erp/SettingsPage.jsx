@@ -34,7 +34,7 @@ export default function SettingsPage() {
 
   // Branding & Media Config
   const [certConfig, setCertConfig] = useState(() => {
-    const saved = localStorage.getItem('nms_cert_config')
+    const saved = localStorage.getItem(`erp_${schoolId}_cert_config`)
     return saved ? JSON.parse(saved) : {
       schoolName: 'New Morning Star Public School',
       address: 'Main Road, Sector 4, City - 123456',
@@ -62,6 +62,11 @@ export default function SettingsPage() {
   // Transport State
   const [addRouteModal, setAddRouteModal] = useState(false)
   const [newRoute, setNewRoute] = useState({ route: '', vehicle: '', driver: '', phone: '' })
+
+  // Classes & Sections State
+  const [addClassModal, setAddClassModal] = useState(false)
+  const [newClass, setNewClass] = useState({ name: '', sections: [{ name: 'A', teacher: '' }], subjects: [] })
+  const [newSubjectInput, setNewSubjectInput] = useState({})
 
   useEffect(() => {
     const savedFee = localStorage.getItem(`erp_${schoolId}_global_fee_config_${currentSession}`) || localStorage.getItem(`erp_${schoolId}_global_fee_config`)
@@ -129,15 +134,15 @@ export default function SettingsPage() {
       reader.onloadend = () => {
         const updated = {...certConfig, [field]: reader.result}
         setCertConfig(updated)
-        localStorage.setItem('nms_cert_config', JSON.stringify(updated))
+        localStorage.setItem(`erp_${schoolId}_cert_config`, JSON.stringify(updated))
       }
       reader.readAsDataURL(file)
     }
   }
 
   const handleGlobalFeeSave = () => {
-    localStorage.setItem('nms_global_fee_config', JSON.stringify(globalFeeConfig))
-    localStorage.setItem(`nms_global_fee_config_${currentSession}`, JSON.stringify(globalFeeConfig))
+    localStorage.setItem(`erp_${schoolId}_global_fee_config`, JSON.stringify(globalFeeConfig))
+    localStorage.setItem(`erp_${schoolId}_global_fee_config_${currentSession}`, JSON.stringify(globalFeeConfig))
     setFeeConfigSaved(true)
     setTimeout(() => setFeeConfigSaved(false), 3000)
   }
@@ -145,8 +150,8 @@ export default function SettingsPage() {
   const syncFeesToAllStudents = () => {
     if (!window.confirm('This will update the "Total Fees" for ALL students in the current session based on your new settings. Unpaid balances will be recalculated. Continue?')) return
     
-    const studentsData = JSON.parse(localStorage.getItem(`nms_students_${currentSession}`) || localStorage.getItem('nms_students') || '[]')
-    const feeKeyStr = `nms_fees_${currentSession}`
+    const studentsData = JSON.parse(localStorage.getItem(`erp_${schoolId}_students_${currentSession}`) || localStorage.getItem(`erp_${schoolId}_students`) || '[]')
+    const feeKeyStr = `erp_${schoolId}_fees_${currentSession}`
     const currentFees = JSON.parse(localStorage.getItem(feeKeyStr) || '{}')
     
     studentsData.forEach(student => {
@@ -216,10 +221,10 @@ export default function SettingsPage() {
   }
   const syncTransport = () => {
     if (!window.confirm(`Sync transport assignments for the CURRENT session (${currentSession})?`)) return
-    const stuKey = `nms_students_${currentSession}`
-    const transKey = `nms_transport_${currentSession}`
-    const students = JSON.parse(localStorage.getItem(stuKey) || localStorage.getItem('nms_students') || '[]')
-    const routes = JSON.parse(localStorage.getItem(transKey) || localStorage.getItem('nms_transport') || '[]')
+    const stuKey = `erp_${schoolId}_students_${currentSession}`
+    const transKey = `erp_${schoolId}_transport_${currentSession}`
+    const students = JSON.parse(localStorage.getItem(stuKey) || localStorage.getItem(`erp_${schoolId}_students`) || '[]')
+    const routes = JSON.parse(localStorage.getItem(transKey) || localStorage.getItem(`erp_${schoolId}_transport`) || '[]')
     const routeNames = routes.map(r => r.route)
     students.forEach(s => {
       if (s.transportRoute !== 'None' && !routeNames.includes(s.transportRoute)) s.transportRoute = 'None'
@@ -230,7 +235,7 @@ export default function SettingsPage() {
 
   const syncFees = () => {
     if (!window.confirm(`Recalculate all fee balances for the CURRENT session (${currentSession})?`)) return
-    const feeKeyStr = `nms_fees_${currentSession}`
+    const feeKeyStr = `erp_${schoolId}_fees_${currentSession}`
     const fees = JSON.parse(localStorage.getItem(feeKeyStr) || '{}')
     Object.keys(fees).forEach(sid => {
       const f = fees[sid]
@@ -242,7 +247,7 @@ export default function SettingsPage() {
 
   const syncStudents = () => {
     if (!window.confirm(`Standardize student metadata for the CURRENT session (${currentSession})?`)) return
-    const stuKey = `nms_students_${currentSession}`
+    const stuKey = `erp_${schoolId}_students_${currentSession}`
     const students = JSON.parse(localStorage.getItem(stuKey) || '[]')
     students.forEach(s => {
       s.name = s.name?.trim()
@@ -255,8 +260,8 @@ export default function SettingsPage() {
 
   const syncAcademic = () => {
     if (!window.confirm('Sync class configurations with current session?')) return
-    const globalCls = JSON.parse(localStorage.getItem('nms_classes') || '[]')
-    localStorage.setItem(`nms_classes_${currentSession}`, JSON.stringify(globalCls))
+    const globalCls = JSON.parse(localStorage.getItem(`erp_${schoolId}_classes`) || '[]')
+    localStorage.setItem(`erp_${schoolId}_classes_${currentSession}`, JSON.stringify(globalCls))
     alert('Academic classes synchronized!'); window.location.reload()
   }
 
@@ -266,20 +271,20 @@ export default function SettingsPage() {
     for (let i = 1; i < sessions.length; i++) {
       const prevSession = sessions[i-1]
       const nextSession = sessions[i]
-      const prevFees = JSON.parse(localStorage.getItem(`nms_fees_${prevSession}`) || '{}')
-      const nextFees = JSON.parse(localStorage.getItem(`nms_fees_${nextSession}`) || '{}')
+      const prevFees = JSON.parse(localStorage.getItem(`erp_${schoolId}_fees_${prevSession}`) || '{}')
+      const nextFees = JSON.parse(localStorage.getItem(`erp_${schoolId}_fees_${nextSession}`) || '{}')
       Object.keys(nextFees).forEach(sid => {
         if (prevFees[sid]) nextFees[sid].prevSessionDues = prevFees[sid].remaining
       })
-      localStorage.setItem(`nms_fees_${nextSession}`, JSON.stringify(nextFees))
+      localStorage.setItem(`erp_${schoolId}_fees_${nextSession}`, JSON.stringify(nextFees))
     }
     alert('Session continuity validated!'); window.location.reload()
   }
 
   // Exam Handlers
   const saveExamData = (types, config) => {
-    localStorage.setItem(`nms_exam_types_${currentSession}`, JSON.stringify(types))
-    localStorage.setItem(`nms_exam_config_${currentSession}`, JSON.stringify(config))
+    localStorage.setItem(`erp_${schoolId}_exam_types_${currentSession}`, JSON.stringify(types))
+    localStorage.setItem(`erp_${schoolId}_exam_config_${currentSession}`, JSON.stringify(config))
     setExamTypes(types)
     setExamConfig(config)
   }
@@ -570,13 +575,13 @@ export default function SettingsPage() {
                   <label className="form-label">Background Template Image (Marksheet/TC)</label>
                   <input type="file" className="form-input" accept="image/*" onChange={e => handleFileUpload(e, 'bgImage')} />
                   {certConfig.bgImage && <img src={certConfig.bgImage} style={{ height: 80, marginTop: 10, objectFit: 'contain', border: '1px solid var(--gray-200)', borderRadius: 8 }} />}
-                  {certConfig.bgImage && <button className="btn btn-sm" style={{ marginTop: 5, color: 'var(--error)' }} onClick={() => { const u = {...certConfig, bgImage: null}; setCertConfig(u); localStorage.setItem('nms_cert_config', JSON.stringify(u)) }}>Remove Template</button>}
+                  {certConfig.bgImage && <button className="btn btn-sm" style={{ marginTop: 5, color: 'var(--error)' }} onClick={() => { const u = {...certConfig, bgImage: null}; setCertConfig(u); localStorage.setItem(`erp_${schoolId}_cert_config`, JSON.stringify(u)) }}>Remove Template</button>}
                 </div>
 
                 {certConfig.bgImage && (
                   <div className="form-group">
                     <label className="form-label">Top Content Margin (px) - Adjust to sit below your printed headers</label>
-                    <input type="range" min="0" max="400" className="form-range" style={{ width: '100%' }} value={certConfig.contentMarginTop || 0} onChange={e => { const u = {...certConfig, contentMarginTop: Number(e.target.value)}; setCertConfig(u); localStorage.setItem('nms_cert_config', JSON.stringify(u)) }} />
+                    <input type="range" min="0" max="400" className="form-range" style={{ width: '100%' }} value={certConfig.contentMarginTop || 0} onChange={e => { const u = {...certConfig, contentMarginTop: Number(e.target.value)}; setCertConfig(u); localStorage.setItem(`erp_${schoolId}_cert_config`, JSON.stringify(u)) }} />
                     <div style={{ fontSize: 12, color: 'var(--gray-500)', marginTop: 5 }}>Current Margin: {certConfig.contentMarginTop}px</div>
                   </div>
                 )}
@@ -585,21 +590,21 @@ export default function SettingsPage() {
                   <label className="form-label">School Logo Image</label>
                   <input type="file" className="form-input" accept="image/*" onChange={e => handleFileUpload(e, 'logoImage')} />
                   {certConfig.logoImage && <img src={certConfig.logoImage} style={{ height: 60, marginTop: 10, objectFit: 'contain' }} />}
-                  {certConfig.logoImage && <button className="btn btn-sm" style={{ marginTop: 5, color: 'var(--error)' }} onClick={() => { const u = {...certConfig, logoImage: null}; setCertConfig(u); localStorage.setItem('nms_cert_config', JSON.stringify(u)) }}>Remove Logo</button>}
+                  {certConfig.logoImage && <button className="btn btn-sm" style={{ marginTop: 5, color: 'var(--error)' }} onClick={() => { const u = {...certConfig, logoImage: null}; setCertConfig(u); localStorage.setItem(`erp_${schoolId}_cert_config`, JSON.stringify(u)) }}>Remove Logo</button>}
                 </div>
 
                 <div className="form-group">
                   <label className="form-label">Admin/Principal Signature Image</label>
                   <input type="file" className="form-input" accept="image/*" onChange={e => handleFileUpload(e, 'signImage')} />
                   {certConfig.signImage && <img src={certConfig.signImage} style={{ height: 40, marginTop: 10, objectFit: 'contain' }} />}
-                  {certConfig.signImage && <button className="btn btn-sm" style={{ marginTop: 5, color: 'var(--error)' }} onClick={() => { const u = {...certConfig, signImage: null}; setCertConfig(u); localStorage.setItem('nms_cert_config', JSON.stringify(u)) }}>Remove Sign</button>}
+                  {certConfig.signImage && <button className="btn btn-sm" style={{ marginTop: 5, color: 'var(--error)' }} onClick={() => { const u = {...certConfig, signImage: null}; setCertConfig(u); localStorage.setItem(`erp_${schoolId}_cert_config`, JSON.stringify(u)) }}>Remove Sign</button>}
                 </div>
 
                 <div className="form-group">
                   <label className="form-label">QR Code / Stamp Image</label>
                   <input type="file" className="form-input" accept="image/*" onChange={e => handleFileUpload(e, 'qrImage')} />
                   {certConfig.qrImage && <img src={certConfig.qrImage} style={{ height: 60, marginTop: 10, objectFit: 'contain' }} />}
-                  {certConfig.qrImage && <button className="btn btn-sm" style={{ marginTop: 5, color: 'var(--error)' }} onClick={() => { const u = {...certConfig, qrImage: null}; setCertConfig(u); localStorage.setItem('nms_cert_config', JSON.stringify(u)) }}>Remove QR</button>}
+                  {certConfig.qrImage && <button className="btn btn-sm" style={{ marginTop: 5, color: 'var(--error)' }} onClick={() => { const u = {...certConfig, qrImage: null}; setCertConfig(u); localStorage.setItem(`erp_${schoolId}_cert_config`, JSON.stringify(u)) }}>Remove QR</button>}
                 </div>
               </div>
             </div>

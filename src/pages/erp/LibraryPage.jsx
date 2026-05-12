@@ -1,5 +1,6 @@
 import { useState } from 'react'
 import { useAuth } from '../../context/AuthContext'
+import { useParams } from 'react-router-dom'
 import { FiBookOpen, FiSearch, FiPlus, FiCheckCircle, FiClock, FiBook, FiUser, FiInfo } from 'react-icons/fi'
 
 const MOCK_BOOKS = [
@@ -12,8 +13,9 @@ const MOCK_BOOKS = [
 
 export default function LibraryPage() {
   const { user } = useAuth()
+  const { schoolId } = useParams()
   const [books, setBooks] = useState(() => {
-    const s = localStorage.getItem('nms_library');
+    const s = localStorage.getItem(`erp_${schoolId}_library`);
     return s ? JSON.parse(s) : MOCK_BOOKS
   })
   const [search, setSearch] = useState('')

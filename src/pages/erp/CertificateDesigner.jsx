@@ -1,11 +1,15 @@
 import { useState } from 'react'
 import { useAuth } from '../../context/AuthContext'
+import { Link, useParams } from 'react-router-dom'
 import { FiAward, FiCheck, FiPrinter, FiLayout, FiType, FiImage, FiGrid, FiSquare, FiSave, FiChevronLeft } from 'react-icons/fi'
 
 export default function CertificateDesigner() {
   const { user } = useAuth()
+  const { schoolId } = useParams()
+  const prefix = `/${schoolId}/erp`
+
   const [config, setConfig] = useState(() => {
-    const saved = localStorage.getItem('nms_cert_config')
+    const saved = localStorage.getItem(`erp_${schoolId}_cert_config`)
     return saved ? JSON.parse(saved) : {
       schoolName: 'New Morning Star Public School',
       address: 'Main Road, Sector 4, City - 123456',
@@ -25,7 +29,7 @@ export default function CertificateDesigner() {
   })
 
   const saveConfig = () => {
-    localStorage.setItem('nms_cert_config', JSON.stringify(config))
+    localStorage.setItem(`erp_${schoolId}_cert_config`, JSON.stringify(config))
     alert('Certificate Design Saved Successfully!')
   }
 

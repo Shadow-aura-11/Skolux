@@ -1,9 +1,11 @@
 import { useState } from 'react'
 import { FiLayout, FiSave, FiUser, FiSmartphone, FiMapPin, FiPrinter, FiShield, FiSquare } from 'react-icons/fi'
+import { useParams } from 'react-router-dom'
 
 export default function IDCardDesigner() {
+  const { schoolId } = useParams()
   const [config, setConfig] = useState(() => {
-    const saved = localStorage.getItem('nms_id_config')
+    const saved = localStorage.getItem(`erp_${schoolId}_id_config`)
     return saved ? JSON.parse(saved) : {
       schoolName: 'NEW MORNING STAR PUBLIC SCHOOL',
       themeColor: '#4f46e5',
@@ -17,10 +19,10 @@ export default function IDCardDesigner() {
   })
 
   // Fetch Global Branding Config
-  const certConfig = JSON.parse(localStorage.getItem('nms_cert_config') || '{"bgImage":null, "logoImage":null, "signImage":null, "qrImage":null}')
+  const certConfig = JSON.parse(localStorage.getItem(`erp_${schoolId}_cert_config`) || '{"bgImage":null, "logoImage":null, "signImage":null, "qrImage":null}')
 
   const saveConfig = () => {
-    localStorage.setItem('nms_id_config', JSON.stringify(config))
+    localStorage.setItem(`erp_${schoolId}_id_config`, JSON.stringify(config))
     alert('ID Card Design Saved!')
   }
 

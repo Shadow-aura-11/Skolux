@@ -1,4 +1,5 @@
 import { useState, useMemo } from 'react'
+import { useLocation, useNavigate, useParams } from 'react-router-dom'
 import { useAuth, MOCK_DATA, feeKey, getPreviousSessionsDue } from '../../context/AuthContext'
 import { useData } from '../../context/DataContext'
 import { FiDollarSign, FiSearch, FiCheckCircle, FiClock, FiAlertCircle, FiPlus, FiPrinter, FiX, FiTag, FiAlertTriangle, FiDownload, FiRefreshCw, FiTruck, FiTrash2 } from 'react-icons/fi'
@@ -7,6 +8,7 @@ import { generatePDF } from '../../utils/pdfUtils'
 
 export default function FeesPage() {
   const { user, currentSession, sessions } = useAuth()
+  const { schoolId } = useParams()
   const { students, refreshData } = useData()
 
   const syncFees = () => {
@@ -59,7 +61,7 @@ export default function FeesPage() {
   const isTeacher = user?.role === 'teacher'
   const isStudent = user?.role === 'student'
   const isParent = user?.role === 'parent'
-  const globalFeeConfig = useMemo(() => JSON.parse(localStorage.getItem('nms_global_fee_config') || '{"classFees":{},"transportFees":{}}'), [currentSession])
+  const globalFeeConfig = useMemo(() => JSON.parse(localStorage.getItem(`erp_${schoolId}_global_fee_config`) || '{"classFees":{},"transportFees":{}}'), [currentSession, schoolId])
   
   const getStudentTotalFee = (student) => {
     const classFee = Number(globalFeeConfig.classFees[student.class] || 40000)

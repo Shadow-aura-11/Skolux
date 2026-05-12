@@ -292,14 +292,14 @@ export const AuthProvider = ({ children }) => {
       localStorage.setItem(dataKey(year), JSON.stringify(initialData))
 
       // Carry over static configurations from currentSession
-      const classData = localStorage.getItem(`nms_classes_${currentSession}`) || localStorage.getItem('nms_classes')
-      if (classData) localStorage.setItem(`nms_classes_${year}`, classData)
+      const classData = localStorage.getItem(`${prefix}_classes_${currentSession}`) || localStorage.getItem(`${prefix}_classes`)
+      if (classData) localStorage.setItem(`${prefix}_classes_${year}`, classData)
 
-      const transportData = localStorage.getItem(`nms_transport_${currentSession}`) || localStorage.getItem('nms_transport')
-      if (transportData) localStorage.setItem(`nms_transport_${year}`, transportData)
+      const transportData = localStorage.getItem(`${prefix}_transport_${currentSession}`) || localStorage.getItem(`${prefix}_transport`)
+      if (transportData) localStorage.setItem(`${prefix}_transport_${year}`, transportData)
 
-      const feeConfigData = localStorage.getItem(`nms_global_fee_config_${currentSession}`) || localStorage.getItem('nms_global_fee_config')
-      if (feeConfigData) localStorage.setItem(`nms_global_fee_config_${year}`, feeConfigData)
+      const feeConfigData = localStorage.getItem(`${prefix}_global_fee_config_${currentSession}`) || localStorage.getItem(`${prefix}_global_fee_config`)
+      if (feeConfigData) localStorage.setItem(`${prefix}_global_fee_config_${year}`, feeConfigData)
 
       return true
     }
@@ -322,10 +322,10 @@ export const AuthProvider = ({ children }) => {
     setUser(updatedUser)
     
     // Also update dynamic users list if this is a non-admin user
-    const dynamicUsers = JSON.parse(localStorage.getItem('nms_dynamic_users') || '[]')
+    const dynamicUsers = JSON.parse(localStorage.getItem(`${prefix}_dynamic_users`) || '[]')
     const updatedList = dynamicUsers.map(u => u.id === user.id ? { ...u, ...data } : u)
     if (dynamicUsers.length > 0) {
-      localStorage.setItem('nms_dynamic_users', JSON.stringify(updatedList))
+      localStorage.setItem(`${prefix}_dynamic_users`, JSON.stringify(updatedList))
       api.save('dynamic_users', updatedList)
     }
   }
