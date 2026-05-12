@@ -7,7 +7,8 @@ const API_BASE = '/api/index.php';
 
 export const getSchoolKey = () => {
   // Extract school key from path: /schoolId/erp/...
-  const pathParts = window.location.pathname.split('/').filter(p => p !== '');
+  const hashPath = window.location.hash.replace(/^#\/?/, ''); // removes # or #/
+  const pathParts = hashPath.split('/').filter(p => p !== '');
   const key = pathParts[0];
 
   // If first part is a known route, check URL params or default

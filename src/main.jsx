@@ -1,6 +1,6 @@
 import React from 'react'
 import ReactDOM from 'react-dom/client'
-import { BrowserRouter } from 'react-router-dom'
+import { HashRouter } from 'react-router-dom'
 import { HelmetProvider } from 'react-helmet-async'
 import { AuthProvider } from './context/AuthContext'
 import { DataProvider } from './context/DataContext'
@@ -10,13 +10,13 @@ import './index.css'
 ReactDOM.createRoot(document.getElementById('root')).render(
   <React.StrictMode>
     <HelmetProvider>
-      <BrowserRouter basename={import.meta.env.BASE_URL}>
+      <HashRouter>
         <AuthProvider>
           <DataProvider>
             <App />
           </DataProvider>
         </AuthProvider>
-      </BrowserRouter>
+      </HashRouter>
     </HelmetProvider>
   </React.StrictMode>,
 )
