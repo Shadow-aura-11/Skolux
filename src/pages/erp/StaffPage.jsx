@@ -25,6 +25,7 @@ export default function StaffPage() {
   })
 
   const [customDesignation, setCustomDesignation] = useState(false)
+  const [certConfig, setCertConfig] = useState(() => JSON.parse(localStorage.getItem(`erp_${schoolId}_cert_config`) || '{"schoolName":"NEW MORNING STAR PUBLIC SCHOOL", "logoImage": null}'))
   const idConfig = JSON.parse(localStorage.getItem(`erp_${schoolId}_id_config`) || '{"schoolName":"NEW MORNING STAR PUBLIC SCHOOL","themeColor":"#4f46e5","textColor":"#ffffff","showQr":true,"showSign":true,"cardType":"vertical","borderRadius":12,"headerHeight":60}')
 
   const filtered = staff.filter(s => 
@@ -188,10 +189,11 @@ export default function StaffPage() {
               margin:'0 auto', border:`4px solid ${idConfig.themeColor}`, borderRadius:idConfig.borderRadius, overflow:'hidden', background:'white', position:'relative', textAlign:'center',
               display: 'flex', flexDirection: 'column'
             }}>
-               <div style={{background:idConfig.themeColor, color:'white', padding:15}}>
-                 <div style={{fontSize:14, fontWeight:900}}>{idConfig.schoolName}</div>
-                 <div style={{fontSize:8}}>STAFF IDENTITY CARD</div>
-               </div>
+                <div style={{background:idConfig.themeColor, color:'white', padding:15}}>
+                  {certConfig.logoImage && <img src={certConfig.logoImage} style={{ height: 30, marginBottom: 5, display: 'block', margin: '0 auto' }} />}
+                  <div style={{fontSize:14, fontWeight:900}}>{certConfig.schoolName || idConfig.schoolName}</div>
+                  <div style={{fontSize:8}}>STAFF IDENTITY CARD</div>
+                </div>
                <div style={{padding:20, display:'flex', flexDirection: idConfig.cardType === 'vertical' ? 'column' : 'row', alignItems:'center', gap:20, flex:1}}>
                  <div style={{width:110, height:130, margin: idConfig.cardType === 'vertical' ? '0 auto' : '0', borderRadius:8, border:`3px solid ${idConfig.themeColor}`, overflow:'hidden', background:'var(--gray-50)', flexShrink:0}}>
                    {printStaff.photo ? <img src={printStaff.photo} style={{width:'100%', height:'100%', objectFit:'cover'}} /> : <FiUser size={40} style={{marginTop:35}} />}
@@ -216,6 +218,38 @@ export default function StaffPage() {
                   )}
                </div>
                <div style={{height:8, background:idConfig.themeColor}}></div>
+             </div>
+             {user?.role === 'admin' && (
+               <div style={{ marginTop: 25, padding: 20, background: 'var(--primary-50)', borderRadius: 12, border: '1px solid var(--primary-200)' }} className="no-print">
+                 <div style={{ fontSize: 11, fontWeight: 800, color: 'var(--primary-700)', marginBottom: 12, textTransform: 'uppercase' }}>Update Global School Branding</div>
+                 <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 10, marginBottom: 10 }}>
+                   <div className="form-group" style={{ marginBottom: 0 }}>
+                     <label className="form-label" style={{ fontSize: 10 }}>School Name</label>
+                     <input className="form-input" style={{ height: 32, fontSize: 12 }} value={certConfig.schoolName} onChange={e => setCertConfig({ ...certConfig, schoolName: e.target.value })} />
+                   </div>
+                   <div className="form-group" style={{ marginBottom: 0 }}>
+                     <label className="form-label" style={{ fontSize: 10 }}>Update School Logo</label>
+                     <input type="file" className="form-input" style={{ height: 32, fontSize: 10, padding: '4px 8px' }} accept="image/*" 
+                       onChange={e => {
+                         const file = e.target.files[0]
+                         if (file) {
+                           const reader = new FileReader()
+                           reader.onloadend = () => setCertConfig({ ...certConfig, logoImage: reader.result })
+                           reader.readAsDataURL(file)
+                         }
+                       }} 
+                     />
+                   </div>
+                 </div>
+                 <button className="btn btn-primary btn-sm" style={{ width: '100%', marginTop: 5 }} 
+                   onClick={() => {
+                     localStorage.setItem(`erp_${schoolId}_cert_config`, JSON.stringify(certConfig))
+                     alert('Global Branding Updated!')
+                   }}>
+                   <FiSave /> Save to All Documents
+                 </button>
+               </div>
+             )}
             </div>
           </div>
         </div>

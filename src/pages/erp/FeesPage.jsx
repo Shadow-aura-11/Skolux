@@ -10,7 +10,7 @@ export default function FeesPage() {
   const { user, currentSession, sessions } = useAuth()
   const { schoolId } = useParams()
   const { students, refreshData, classes = [], transportRoutes = [] } = useData()
-  const certConfig = JSON.parse(localStorage.getItem(`erp_${schoolId}_cert_config`) || '{"schoolName":"NEW MORNING STAR PUBLIC SCHOOL", "address":"Subhash Nagar, New Delhi", "phone":"+91 98765 43210"}')
+  const [certConfig, setCertConfig] = useState(() => JSON.parse(localStorage.getItem(`erp_${schoolId}_cert_config`) || '{"schoolName":"NEW MORNING STAR PUBLIC SCHOOL", "address":"Subhash Nagar, New Delhi", "phone":"+91 98765 43210"}'))
 
   const syncFees = () => {
     if (!window.confirm(`Recalculate all fee balances for the CURRENT session (${currentSession})? This will fix any balance discrepancies across all students.`)) return
@@ -618,6 +618,37 @@ export default function FeesPage() {
               </div>
             </div>
             </div>
+            {isAdmin && (
+              <div style={{ marginTop: 25, padding: 20, background: 'var(--primary-50)', borderRadius: 12, border: '1px solid var(--primary-200)' }} className="no-print">
+                <div style={{ fontSize: 11, fontWeight: 800, color: 'var(--primary-700)', marginBottom: 12, textTransform: 'uppercase' }}>Update Global School Branding</div>
+                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 10, marginBottom: 10 }}>
+                  <div className="form-group" style={{ marginBottom: 0 }}>
+                    <label className="form-label" style={{ fontSize: 10 }}>School Name</label>
+                    <input className="form-input" style={{ height: 32, fontSize: 12 }} value={certConfig.schoolName} onChange={e => setCertConfig({ ...certConfig, schoolName: e.target.value })} />
+                  </div>
+                  <div className="form-group" style={{ marginBottom: 0 }}>
+                    <label className="form-label" style={{ fontSize: 10 }}>Update School Logo</label>
+                    <input type="file" className="form-input" style={{ height: 32, fontSize: 10, padding: '4px 8px' }} accept="image/*" 
+                      onChange={e => {
+                        const file = e.target.files[0]
+                        if (file) {
+                          const reader = new FileReader()
+                          reader.onloadend = () => setCertConfig({ ...certConfig, logoImage: reader.result })
+                          reader.readAsDataURL(file)
+                        }
+                      }} 
+                    />
+                  </div>
+                </div>
+                <button className="btn btn-primary btn-sm" style={{ width: '100%', marginTop: 5 }} 
+                  onClick={() => {
+                    localStorage.setItem(`erp_${schoolId}_cert_config`, JSON.stringify(certConfig))
+                    alert('Global Branding Updated!')
+                  }}>
+                  <FiSave /> Save to All Documents
+                </button>
+              </div>
+            )}
             <div style={{ marginTop: 25, padding: 20, background: 'var(--gray-50)', borderRadius: 12, border: '1px solid var(--gray-200)' }} className="no-print">
               <div style={{ fontSize: 11, fontWeight: 800, color: 'var(--gray-600)', marginBottom: 12, textTransform: 'uppercase' }}>Edit Receipt Header (For this print)</div>
               <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 10, marginBottom: 10 }}>

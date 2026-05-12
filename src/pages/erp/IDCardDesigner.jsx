@@ -45,6 +45,11 @@ export default function IDCardDesigner() {
           <h4 style={{ fontSize: 13, fontWeight: 700, color: 'var(--gray-500)', textTransform: 'uppercase', marginBottom: 20 }}>Style Settings</h4>
           
           <div className="form-group">
+            <label className="form-label">School Name</label>
+            <input className="form-input" value={config.schoolName} onChange={e => setConfig({...config, schoolName: e.target.value})} />
+          </div>
+
+          <div className="form-group">
             <label className="form-label">Theme Color</label>
             <input type="color" className="form-input" style={{ height: 40, padding: 2 }} value={config.themeColor} onChange={e => setConfig({...config, themeColor: e.target.value})} />
           </div>

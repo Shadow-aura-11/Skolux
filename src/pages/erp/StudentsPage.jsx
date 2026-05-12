@@ -727,7 +727,7 @@ export default function StudentsPage() {
                 )}
 
                 <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 30, fontSize: 14, fontWeight: 600 }}>
-                  <div>TC No: <span style={{ textDecoration: 'underline' }}>{Math.floor(Math.random() * 10000)}/2026</span></div>
+                  <div>TC No: <span style={{ textDecoration: 'underline' }}>{Math.floor(Math.random() * 10000) + "/2026"}</span></div>
                   <div>Student ID: <span style={{ textDecoration: 'underline' }}>{printTCStudent.id}</span></div>
                   <div>Date: <span style={{ textDecoration: 'underline' }}>{new Date().toLocaleDateString()}</span></div>
                 </div>
