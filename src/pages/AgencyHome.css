@@ -1,0 +1,244 @@
+@import url('https://fonts.googleapis.com/css2?family=Outfit:wght@100;400;700;900&display=swap');
+
+.agency-home {
+  --primary: #8b5cf6;
+  --secondary: #ec4899;
+  --accent: #06b6d4;
+  --bg-dark: #020617;
+  --card-bg: rgba(15, 23, 42, 0.6);
+  --glass: rgba(255, 255, 255, 0.03);
+  --text-dim: #94a3b8;
+  
+  font-family: 'Outfit', sans-serif;
+  color: white;
+  background-color: var(--bg-dark);
+  overflow-x: hidden;
+}
+
+/* --- Immersive Background --- */
+.immersive-bg {
+  position: fixed;
+  top: 0; left: 0; width: 100%; height: 100%;
+  z-index: -1;
+  background: radial-gradient(circle at 20% 20%, rgba(139, 92, 246, 0.15) 0%, transparent 40%),
+              radial-gradient(circle at 80% 80%, rgba(236, 72, 153, 0.1) 0%, transparent 40%);
+}
+
+.mesh-grid {
+  position: absolute;
+  top: 0; left: 0; width: 100%; height: 100%;
+  background-image: 
+    linear-gradient(rgba(255,255,255,0.05) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(255,255,255,0.05) 1px, transparent 1px);
+  background-size: 50px 50px;
+  mask-image: radial-gradient(circle at center, black, transparent 80%);
+}
+
+/* --- Header --- */
+.agency-nav {
+  position: fixed;
+  top: 20px; left: 50%;
+  transform: translateX(-50%);
+  width: 90%; max-width: 1200px;
+  background: rgba(15, 23, 42, 0.6);
+  backdrop-filter: blur(20px);
+  border: 1px solid rgba(255,255,255,0.1);
+  border-radius: 100px;
+  padding: 12px 32px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  z-index: 1000;
+}
+
+/* --- Hero Section --- */
+.hero-3d-container {
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 120px 5%;
+  perspective: 2000px;
+}
+
+.hero-content-wrap {
+  text-align: center;
+  z-index: 10;
+}
+
+.hero-glitch-title {
+  font-size: clamp(50px, 10vw, 120px);
+  font-weight: 900;
+  line-height: 0.9;
+  letter-spacing: -4px;
+  margin-bottom: 32px;
+  text-transform: uppercase;
+  background: linear-gradient(180deg, #fff 0%, #64748b 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+
+.hero-subtitle-3d {
+  font-size: 20px;
+  color: var(--text-dim);
+  max-width: 600px;
+  margin: 0 auto 48px;
+  line-height: 1.6;
+}
+
+/* --- 3D Floating Elements --- */
+.floating-3d-scene {
+  position: absolute;
+  width: 100%; height: 100%;
+  pointer-events: none;
+}
+
+.floating-object {
+  position: absolute;
+  background: linear-gradient(135deg, var(--primary), var(--secondary));
+  filter: blur(40px);
+  border-radius: 50%;
+  opacity: 0.3;
+}
+
+/* --- Glass Cards 3D --- */
+.card-3d-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
+  gap: 32px;
+  padding: 100px 5%;
+}
+
+.glass-card-3d {
+  background: var(--card-bg);
+  backdrop-filter: blur(30px);
+  border: 1px solid rgba(255,255,255,0.1);
+  border-radius: 40px;
+  padding: 60px 40px;
+  position: relative;
+  overflow: hidden;
+  transition: all 0.6s cubic-bezier(0.23, 1, 0.32, 1);
+  transform-style: preserve-3d;
+}
+
+.glass-card-3d:hover {
+  transform: translateY(-20px) rotateX(10deg) rotateY(-5deg);
+  border-color: var(--primary);
+  box-shadow: 0 40px 80px rgba(139, 92, 246, 0.2);
+}
+
+.card-icon-3d {
+  width: 80px; height: 80px;
+  background: rgba(255,255,255,0.05);
+  border-radius: 24px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 32px;
+  color: var(--primary);
+  margin-bottom: 32px;
+  transform: translateZ(50px);
+}
+
+/* --- Section Titles --- */
+.section-title-huge {
+  font-size: clamp(40px, 6vw, 80px);
+  font-weight: 900;
+  text-align: center;
+  margin-bottom: 20px;
+  letter-spacing: -2px;
+}
+
+/* --- 3D Pricing --- */
+.pricing-wrap-3d {
+  display: flex;
+  gap: 40px;
+  justify-content: center;
+  flex-wrap: wrap;
+  padding: 80px 5%;
+}
+
+.price-card-3d {
+  width: 380px;
+  background: rgba(15, 23, 42, 0.8);
+  border-radius: 40px;
+  padding: 60px 40px;
+  border: 1px solid rgba(255,255,255,0.1);
+  transition: 0.5s;
+  text-align: center;
+}
+
+.price-card-3d.premium {
+  background: linear-gradient(135deg, #4f46e5 0%, #7c3aed 100%);
+  border: none;
+  transform: scale(1.1);
+}
+
+/* --- Contact 3D --- */
+.contact-3d-wrap {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 100px;
+  padding: 120px 10%;
+  align-items: center;
+}
+
+.input-3d {
+  background: rgba(255,255,255,0.05);
+  border: 1px solid rgba(255,255,255,0.1);
+  padding: 20px;
+  border-radius: 16px;
+  color: white;
+  width: 100%;
+  margin-bottom: 20px;
+  font-family: inherit;
+  transition: 0.3s;
+}
+
+.input-3d:focus {
+  outline: none;
+  border-color: var(--primary);
+  background: rgba(255,255,255,0.1);
+}
+
+.btn-3d {
+  background: white;
+  color: black;
+  padding: 20px 48px;
+  border-radius: 100px;
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  border: none;
+  cursor: pointer;
+  transition: 0.3s;
+  display: inline-flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.btn-3d:hover {
+  transform: scale(1.05);
+  box-shadow: 0 0 30px rgba(255,255,255,0.3);
+}
+
+/* --- Animations --- */
+@keyframes float {
+  0%, 100% { transform: translateY(0px) rotate(0deg); }
+  50% { transform: translateY(-30px) rotate(5deg); }
+}
+
+.animate-float {
+  animation: float 8s ease-in-out infinite;
+}
+
+/* --- Responsive --- */
+@media (max-width: 1024px) {
+  .contact-3d-wrap {
+    grid-template-columns: 1fr;
+    text-align: center;
+  }
+  .price-card-3d.premium {
+    transform: scale(1);
+  }
+}
