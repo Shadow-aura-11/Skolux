@@ -38,6 +38,8 @@ export default function SettingsPage() {
     return saved ? JSON.parse(saved) : {
       schoolName: 'New Morning Star Public School',
       address: 'Main Road, Sector 4, City - 123456',
+      phone: '+91 98765 43210',
+      email: 'info@morningstar.edu',
       borderColor: '#4f46e5',
       headerColor: '#1e1b4b',
       showLogo: true,
@@ -45,6 +47,9 @@ export default function SettingsPage() {
       showSign: true,
       watermark: 'OFFICIAL',
       theme: 'classic',
+      idCardFormat: 'Modern',
+      reportCardFormat: 'Detailed',
+      tcFormat: 'Standard',
       bgImage: null,
       logoImage: null,
       signImage: null,
@@ -128,6 +133,12 @@ export default function SettingsPage() {
       { id: 'exams', label: 'Exam Configuration', icon: <FiFileText /> }
     ] : []),
   ]
+
+  const handleSaveBranding = () => {
+    localStorage.setItem(`erp_${schoolId}_cert_config`, JSON.stringify(certConfig))
+    setSaved(true)
+    setTimeout(() => setSaved(false), 3000)
+  }
 
   const handleFileUpload = (e, field) => {
     const file = e.target.files[0]
@@ -436,22 +447,94 @@ export default function SettingsPage() {
       case 'branding':
         return (
           <div style={{ padding: 'var(--space-6)' }}>
-            <h3 style={{ fontWeight: 700, marginBottom: 20 }}>Global Branding</h3>
-            <div style={{ display: 'grid', gridTemplateColumns: '1fr', gap: 20, maxWidth: 500 }}>
-              <div className="form-group">
-                <label className="form-label">Background Template</label>
-                <input type="file" className="form-input" accept="image/*" onChange={e => handleFileUpload(e, 'bgImage')} />
-                {certConfig.bgImage && <img src={certConfig.bgImage} style={{ height: 80, marginTop: 10, borderRadius: 8, border: '1px solid var(--gray-200)' }} />}
+            <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 24, alignItems: 'center' }}>
+              <h3 style={{ fontWeight: 700 }}>Global Branding & Media</h3>
+              <button className="btn btn-primary" onClick={handleSaveBranding}>
+                {saved ? <><FiCheckCircle /> Saved</> : <><FiSave /> Save Branding</>}
+              </button>
+            </div>
+            
+            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 30 }}>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: 20 }}>
+                <h4 style={{ fontWeight: 700, color: 'var(--primary-600)', fontSize: 14 }}>SCHOOL INFORMATION</h4>
+                <div className="form-group">
+                  <label className="form-label">School Name</label>
+                  <input className="form-input" value={certConfig.schoolName} onChange={e => setCertConfig({...certConfig, schoolName: e.target.value})} />
+                </div>
+                <div className="form-group">
+                  <label className="form-label">Address</label>
+                  <textarea className="form-input" style={{ height: 80 }} value={certConfig.address} onChange={e => setCertConfig({...certConfig, address: e.target.value})} />
+                </div>
+                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 15 }}>
+                  <div className="form-group">
+                    <label className="form-label">Phone Number</label>
+                    <input className="form-input" value={certConfig.phone} onChange={e => setCertConfig({...certConfig, phone: e.target.value})} />
+                  </div>
+                  <div className="form-group">
+                    <label className="form-label">Email Address</label>
+                    <input className="form-input" value={certConfig.email} onChange={e => setCertConfig({...certConfig, email: e.target.value})} />
+                  </div>
+                </div>
+
+                <h4 style={{ fontWeight: 700, color: 'var(--primary-600)', fontSize: 14, marginTop: 10 }}>DOCUMENT FORMATS</h4>
+                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 15 }}>
+                  <div className="form-group">
+                    <label className="form-label">ID Card Style</label>
+                    <select className="form-select" value={certConfig.idCardFormat} onChange={e => setCertConfig({...certConfig, idCardFormat: e.target.value})}>
+                      <option value="Modern">Modern (Vertical)</option>
+                      <option value="Classic">Classic (Horizontal)</option>
+                      <option value="Compact">Compact</option>
+                    </select>
+                  </div>
+                  <div className="form-group">
+                    <label className="form-label">Report Card Style</label>
+                    <select className="form-select" value={certConfig.reportCardFormat} onChange={e => setCertConfig({...certConfig, reportCardFormat: e.target.value})}>
+                      <option value="Detailed">Detailed</option>
+                      <option value="Brief">Brief</option>
+                      <option value="CBSE">CBSE Standard</option>
+                    </select>
+                  </div>
+                </div>
+                <div className="form-group">
+                  <label className="form-label">TC Format</label>
+                  <select className="form-select" value={certConfig.tcFormat} onChange={e => setCertConfig({...certConfig, tcFormat: e.target.value})}>
+                    <option value="Standard">Standard Official</option>
+                    <option value="Formal">Formal (With Background)</option>
+                  </select>
+                </div>
               </div>
-              <div className="form-group">
-                <label className="form-label">School Logo</label>
-                <input type="file" className="form-input" accept="image/*" onChange={e => handleFileUpload(e, 'logoImage')} />
-                {certConfig.logoImage && <img src={certConfig.logoImage} style={{ height: 60, marginTop: 10 }} />}
-              </div>
-              <div className="form-group">
-                <label className="form-label">Principal Signature</label>
-                <input type="file" className="form-input" accept="image/*" onChange={e => handleFileUpload(e, 'signImage')} />
-                {certConfig.signImage && <img src={certConfig.signImage} style={{ height: 40, marginTop: 10 }} />}
+
+              <div style={{ display: 'flex', flexDirection: 'column', gap: 20 }}>
+                <h4 style={{ fontWeight: 700, color: 'var(--primary-600)', fontSize: 14 }}>ASSETS & MEDIA</h4>
+                <div className="form-group">
+                  <label className="form-label">Background Template (Report/TC)</label>
+                  <input type="file" className="form-input" accept="image/*" onChange={e => handleFileUpload(e, 'bgImage')} />
+                  {certConfig.bgImage && <img src={certConfig.bgImage} style={{ height: 80, marginTop: 10, borderRadius: 8, border: '1px solid var(--gray-200)' }} />}
+                </div>
+                <div className="form-group">
+                  <label className="form-label">School Logo</label>
+                  <div style={{ display: 'flex', gap: 15, alignItems: 'flex-start' }}>
+                    <div style={{ flex: 1 }}>
+                      <input type="file" className="form-input" accept="image/*" onChange={e => handleFileUpload(e, 'logoImage')} />
+                    </div>
+                    {certConfig.logoImage && <img src={certConfig.logoImage} style={{ height: 60, borderRadius: 4 }} />}
+                  </div>
+                </div>
+                <div className="form-group">
+                  <label className="form-label">Principal Signature</label>
+                  <div style={{ display: 'flex', gap: 15, alignItems: 'flex-start' }}>
+                    <div style={{ flex: 1 }}>
+                      <input type="file" className="form-input" accept="image/*" onChange={e => handleFileUpload(e, 'signImage')} />
+                    </div>
+                    {certConfig.signImage && <img src={certConfig.signImage} style={{ height: 40 }} />}
+                  </div>
+                </div>
+                <div style={{ background: 'var(--gray-50)', padding: 15, borderRadius: 12, border: '1px solid var(--gray-100)', marginTop: 10 }}>
+                  <div style={{ fontSize: 12, fontWeight: 700, color: 'var(--gray-600)', marginBottom: 5 }}>PRO TIP</div>
+                  <div style={{ fontSize: 11, color: 'var(--gray-500)', lineHeight: 1.4 }}>
+                    Use high-resolution transparent PNGs for logos and signatures for the best printing results on ID cards and certificates.
+                  </div>
+                </div>
               </div>
             </div>
           </div>

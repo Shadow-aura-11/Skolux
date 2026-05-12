@@ -9,6 +9,8 @@ export default function MarkAttendancePage() {
   const [selectedSection, setSelectedSection] = useState('A')
   
   const { students, attendance, updateAttendance, classes: erpClasses = [] } = useData()
+  const currentClassObj = erpClasses.find(c => c.class === selectedClass)
+  const sectionList = currentClassObj?.sections?.map(s => s.name) || ['A', 'B', 'C', 'D']
 
   const [localAttendance, setLocalAttendance] = useState({}) // { studentId: 'Present' | 'Absent' | 'Late' }
   const [savedStatus, setSavedStatus] = useState(false)
@@ -90,7 +92,7 @@ export default function MarkAttendancePage() {
         <div className="form-group" style={{ flex: 1, marginBottom: 0 }}>
           <label className="form-label">Select Section</label>
           <select className="form-select" value={selectedSection} onChange={e => setSelectedSection(e.target.value)}>
-            {['A', 'B', 'C', 'D'].map(s => <option key={s} value={s}>Section {s}</option>)}
+            {sectionList.map(s => <option key={s} value={s}>Section {s}</option>)}
           </select>
         </div>
         <div style={{ padding: '10px 20px', background: 'var(--gray-50)', borderRadius: 12, fontSize: 13, fontWeight: 700, color: 'var(--gray-500)' }}>

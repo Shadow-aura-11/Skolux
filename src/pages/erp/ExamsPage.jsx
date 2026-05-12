@@ -34,6 +34,11 @@ export default function ExamsPage() {
     return saved ? JSON.parse(saved) : {}
   }, [currentSession, schoolId])
 
+  const certConfig = useMemo(() => {
+    const saved = localStorage.getItem(`erp_${schoolId}_cert_config`)
+    return saved ? JSON.parse(saved) : { schoolName: 'NEW MORNING STAR PUBLIC SCHOOL', address: 'Main Road, Sector 4, City - 123456' }
+  }, [schoolId])
+
   useEffect(() => {
     if (examTypes.length > 0 && !selectedExam) setSelectedExam(examTypes[0])
   }, [examTypes, selectedExam])
@@ -282,11 +287,11 @@ export default function ExamsPage() {
               </div>
             </div>
             
-            <div id="report-card-printable" style={{ padding: 40, border: '10px solid var(--primary-600)', minHeight: 800 }}>
-              {/* This mimics the CertificateDesigner layout */}
+            <div id="report-card-printable" style={{ padding: 40, border: '10px solid var(--primary-600)', minHeight: 800, background: certConfig.bgImage ? `url(${certConfig.bgImage}) no-repeat center/100% 100%` : 'white' }}>
               <div style={{ textAlign: 'center', marginBottom: 30 }}>
-                <h1 style={{ fontSize: 26, fontWeight: 900, color: 'var(--primary-800)' }}>NEW MORNING STAR PUBLIC SCHOOL</h1>
-                <p style={{ fontSize: 12, color: 'var(--gray-500)' }}>Main Road, Sector 4, City - 123456</p>
+                {certConfig.logoImage && <img src={certConfig.logoImage} style={{ height: 60, marginBottom: 10 }} />}
+                <h1 style={{ fontSize: 26, fontWeight: 900, color: 'var(--primary-800)', textTransform: 'uppercase' }}>{certConfig.schoolName}</h1>
+                <p style={{ fontSize: 12, color: 'var(--gray-500)' }}>{certConfig.address}</p>
                 <div style={{ borderBottom: '2px solid var(--primary-100)', margin: '15px 0' }} />
                 <h2 style={{ fontSize: 18, fontWeight: 700, textTransform: 'uppercase', letterSpacing: 2 }}>{selectedExam} Report Card</h2>
               </div>
@@ -340,8 +345,11 @@ export default function ExamsPage() {
               </table>
 
               <div style={{ display: 'flex', justifyContent: 'space-between', marginTop: 100 }}>
-                <div style={{ textAlign: 'center', borderTop: '1px solid var(--gray-300)', paddingTop: 5, width: 150 }}>Class Teacher</div>
-                <div style={{ textAlign: 'center', borderTop: '1px solid var(--gray-300)', paddingTop: 5, width: 150 }}>Principal</div>
+                <div style={{ textAlign: 'center', borderTop: '1px solid var(--gray-300)', paddingTop: 5, width: 150, fontSize: 12, fontWeight: 700 }}>Class Teacher</div>
+                <div style={{ textAlign: 'center', width: 150 }}>
+                  {certConfig.signImage && <img src={certConfig.signImage} style={{ height: 40, marginBottom: 5 }} />}
+                  <div style={{ borderTop: certConfig.signImage ? 'none' : '1px solid var(--gray-300)', paddingTop: 5, fontSize: 12, fontWeight: 700 }}>Principal</div>
+                </div>
               </div>
             </div>
           </div>

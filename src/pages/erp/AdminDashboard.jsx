@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react'
-import { Link } from 'react-router-dom'
+import { Link, useParams } from 'react-router-dom'
 import { useAuth, MOCK_DATA, getTotalPastDues } from '../../context/AuthContext'
 import { useData } from '../../context/DataContext'
 import {
@@ -12,6 +12,7 @@ import { exportToCSV } from '../../utils/exportUtils'
 
 export default function AdminDashboard() {
   const { user, currentSession, updateSession, sessions, school } = useAuth()
+  const { schoolId } = useParams()
   const prefix = `/${school?.key || 'nms'}/erp`
   const { 
     students = [], attendance = [], notices = [], feeStats = { collected: 0, pending: 0, overdue: 0 }, 
@@ -131,12 +132,17 @@ export default function AdminDashboard() {
   // Filter notices for current session if they have metadata, or just show all if generic
   const displayNotices = notices && notices.length > 0 ? notices : MOCK_DATA.notices
 
+  const certConfig = JSON.parse(localStorage.getItem(`erp_${schoolId}_cert_config`) || '{}')
+
   return (
     <>
       <div className="dash-page-header" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
-        <div>
-          <div className="dash-page-title">Welcome back, {user?.name?.split(' ')[0]}!</div>
-          <div className="dash-page-subtitle">{todayDate}</div>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 15 }}>
+          {certConfig.logoImage && <img src={certConfig.logoImage} style={{ height: 50, width: 50, objectFit: 'contain', background: 'white', padding: 5, borderRadius: 12, border: '1px solid var(--gray-100)' }} />}
+          <div>
+            <div className="dash-page-title">{certConfig.schoolName || `Welcome back, ${user?.name?.split(' ')[0]}!`}</div>
+            <div className="dash-page-subtitle">{certConfig.schoolName ? `Dashboard | ${todayDate}` : todayDate}</div>
+          </div>
         </div>
         <div style={{ display: 'flex', gap: 'var(--space-2)', alignItems: 'center' }}>
           <div style={{ marginRight: 15, display: 'flex', alignItems: 'center', gap: 8, background: 'white', padding: '6px 12px', borderRadius: 10, border: '1px solid var(--gray-200)' }}>

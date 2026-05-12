@@ -39,11 +39,19 @@ export default function StudentsPage() {
   const [promoteModal, setPromoteModal] = useState(false)
   const [targetSession, setTargetSession] = useState('')
   const [targetClass, setTargetClass] = useState('')
-  const idConfig = JSON.parse(localStorage.getItem(`erp_${schoolId}_id_config`) || '{"schoolName":"NEW MORNING STAR PUBLIC SCHOOL","themeColor":"#4f46e5","textColor":"#ffffff","showQr":true,"showSign":true,"cardType":"vertical","borderRadius":12,"headerHeight":60}')
-  
+  const certConfig = JSON.parse(localStorage.getItem(`erp_${schoolId}_cert_config`) || '{"schoolName":"NEW MORNING STAR PUBLIC SCHOOL", "address":"Subhash Nagar, New Delhi", "phone":"+91 98765 43210", "email":"info@nmsps.edu.in", "bgImage":null, "logoImage":null, "signImage":null, "qrImage":null, "contentMarginTop": 0, "showLogo": true, "showSign": true, "themeColor": "#4f46e5", "idCardFormat": "Modern"}')
+  const idConfig = {
+    schoolName: certConfig.schoolName,
+    themeColor: certConfig.themeColor || '#4f46e5',
+    textColor: '#ffffff',
+    showQr: !!certConfig.qrImage,
+    showSign: certConfig.showSign,
+    cardType: certConfig.idCardFormat === 'Modern' ? 'vertical' : 'horizontal',
+    borderRadius: 12,
+    headerHeight: 60
+  }
   const transportRoutes = JSON.parse(localStorage.getItem(`erp_${schoolId}_transport_${currentSession}`) || localStorage.getItem(`erp_${schoolId}_transport`) || '[]')
   const globalFeeConfig = JSON.parse(localStorage.getItem(`erp_${schoolId}_global_fee_config`) || '{"classFees":{},"transportFees":{}}')
-  const certConfig = JSON.parse(localStorage.getItem(`erp_${schoolId}_cert_config`) || '{"bgImage":null, "logoImage":null, "signImage":null, "qrImage":null, "contentMarginTop": 0, "showLogo": true, "showSign": true}')
 
   const getStudentSubjects = (studentClass) => {
     const cls = globalClasses.find(c => c.class === studentClass)
@@ -644,9 +652,12 @@ export default function StudentsPage() {
               textAlign:'center', boxShadow:'0 20px 40px rgba(0,0,0,0.2)',
               display: 'flex', flexDirection: 'column'
             }}>
-               <div style={{background:idConfig.themeColor, color:'white', padding:'20px 15px'}}>
-                 <div style={{fontSize:14, fontWeight:900, letterSpacing:1}}>{idConfig.schoolName}</div>
-                 <div style={{fontSize:9, marginTop:5, background:'white', color:idConfig.themeColor, display:'inline-block', padding:'2px 10px', borderRadius:100, fontWeight:800}}>STUDENT IDENTITY CARD</div>
+               <div style={{background:idConfig.themeColor, color:'white', padding:'15px'}}>
+                 <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 10 }}>
+                   {certConfig.logoImage && <img src={certConfig.logoImage} style={{ height: 35, width: 35, objectFit: 'contain' }} />}
+                   <div style={{fontSize:14, fontWeight:900, letterSpacing:0.5, lineHeight: 1.2, textAlign: 'left'}}>{idConfig.schoolName}</div>
+                 </div>
+                 <div style={{fontSize:8, marginTop:8, background:'white', color:idConfig.themeColor, display:'inline-block', padding:'2px 10px', borderRadius:100, fontWeight:800}}>STUDENT IDENTITY CARD</div>
                </div>
                
                <div style={{padding:25, display:'flex', flexDirection: idConfig.cardType === 'vertical' ? 'column' : 'row', alignItems:'center', gap:20, flex:1}}>
@@ -706,7 +717,7 @@ export default function StudentsPage() {
                     {certConfig.showLogo && certConfig.logoImage && <img src={certConfig.logoImage} style={{ width: 80, height: 80, objectFit: 'contain', margin: '0 auto 15px', display: 'block' }} />}
                     <h1 style={{ fontSize: 32, fontWeight: 900, color: 'var(--primary-800)', textTransform: 'uppercase' }}>{certConfig.schoolName || 'NEW MORNING STAR PUBLIC SCHOOL'}</h1>
                     <p style={{ fontSize: 14, color: 'var(--gray-600)' }}>Affiliated to Central Board of Secondary Education (CBSE)</p>
-                    <p style={{ fontSize: 12, color: 'var(--gray-500)' }}>{certConfig.address || 'Subhash Nagar, New Delhi - 110027 | Email: info@nmsps.edu.in'}</p>
+                    <p style={{ fontSize: 12, color: 'var(--gray-500)' }}>{certConfig.address} | Email: {certConfig.email} | Phone: {certConfig.phone}</p>
                     <div style={{ borderBottom: '2px solid var(--primary-600)', margin: '15px 0' }} />
                     <h2 style={{ fontSize: 24, fontWeight: 800, textTransform: 'uppercase', letterSpacing: 2, display: 'inline-block', border: '2px solid var(--primary-800)', padding: '5px 20px', borderRadius: 4 }}>TRANSFER CERTIFICATE</h2>
                   </div>
