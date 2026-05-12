@@ -175,6 +175,7 @@ export default function FeesPage() {
       status: 'Paid',
       mode: collectForm.mode,
       remarks: collectForm.remarks,
+      collectedBy: user.name,
       session: targetSession
     }
 
@@ -447,7 +448,7 @@ export default function FeesPage() {
                   <table className="table">
                     <thead>
                       <tr>
-                        <th>Date</th><th>Type</th><th>Mode</th><th>Total</th><th>Discount</th><th>Paid</th><th>Remarks</th><th>Action</th>
+                        <th>Date</th><th>Type</th><th>Mode</th><th>Total</th><th>Discount</th><th>Paid</th><th>Collected By</th><th>Remarks</th><th>Action</th>
                       </tr>
                     </thead>
                     <tbody>
@@ -462,7 +463,8 @@ export default function FeesPage() {
                             <td style={{ fontWeight: 600 }}>₹{(Number(h.amount) || 0).toLocaleString()}</td>
                             <td style={{ color: 'var(--gold-600)', fontWeight: 600 }}>₹{h.discount || 0}</td>
                             <td style={{ color: 'var(--accent-600)', fontWeight: 700 }}>₹{(Number(h.paid) || 0).toLocaleString()}</td>
-                            <td style={{ fontSize: 12, color: 'var(--gray-500)', maxWidth: 150, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{h.remarks || '-'}</td>
+                            <td style={{ fontSize: 11, fontWeight: 600, color: 'var(--primary-600)' }}>{h.collectedBy || 'Admin'}</td>
+                            <td style={{ fontSize: 12, color: 'var(--gray-500)', maxWidth: 120, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{h.remarks || '-'}</td>
                             <td>
                                <div style={{ display: 'flex', gap: 6 }}>
                                  <button className="btn btn-sm" style={{ padding: 4, background: 'var(--gray-50)' }}
@@ -595,11 +597,15 @@ export default function FeesPage() {
                 <tfoot><tr style={{ borderTop: '2px solid #1e293b', background: '#f8fafc !important', boxShadow: 'inset 0 0 0 1000px #f8fafc !important' }}><td style={{ padding: '15px 0', fontWeight: 800, fontSize: 16, color: '#0f172a !important' }}>TOTAL PAID</td><td style={{ textAlign: 'right', padding: '15px 0', fontWeight: 800, fontSize: 18, color: '#1e40af !important' }}>₹{printData.paid.toLocaleString()}</td></tr></tfoot>
               </table>
               {printData.remarks && (
-                <div style={{ marginBottom: 30 }}>
+                <div style={{ marginBottom: 20 }}>
                   <div style={{ fontSize: 10, color: '#94a3b8 !important', textTransform: 'uppercase' }}>Remarks</div>
                   <div style={{ fontSize: 13, color: '#0f172a !important', marginTop: 5 }}>{printData.remarks}</div>
                 </div>
               )}
+              <div style={{ marginBottom: 30, padding: '10px 15px', background: '#f8fafc !important', borderRadius: 8, border: '1px solid #e2e8f0' }}>
+                <div style={{ fontSize: 10, color: '#94a3b8 !important', textTransform: 'uppercase' }}>Payment Collected By</div>
+                <div style={{ fontSize: 13, fontWeight: 700, color: '#1e40af !important', marginTop: 2 }}>{printData.collectedBy || 'Authorized Admin'}</div>
+              </div>
               <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 40, marginTop: 40 }}>
                 <div style={{ fontSize: 11, color: '#94a3b8 !important' }}>* Computer generated receipt.<br />* Fees once paid is non-refundable.</div>
                 <div style={{ textAlign: 'center' }}><div style={{ height: 1, background: '#cbd5e1', marginBottom: 10 }} /><div style={{ fontSize: 12, fontWeight: 700, color: '#0f172a !important' }}>Authorized Signatory</div></div>
