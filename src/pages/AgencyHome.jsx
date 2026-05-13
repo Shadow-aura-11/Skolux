@@ -108,6 +108,49 @@ export default function AgencyHome() {
       {/* Background Layer */}
       <div className="immersive-bg">
         <div className="mesh-grid"></div>
+        <div className="scanning-line"></div>
+        
+        {/* Relatable Translucent Graphics */}
+        <div className="bg-graphics-layer">
+          {[
+            { icon: <FiBook />, top: '15%', left: '10%', delay: 0, size: 120 },
+            { icon: <FiGlobe />, top: '25%', left: '85%', delay: 2, size: 160 },
+            { icon: <FiCpu />, top: '65%', left: '12%', delay: 4, size: 140 },
+            { icon: <FiShield />, top: '75%', left: '78%', delay: 1, size: 100 },
+            { icon: <FiZap />, top: '40%', left: '92%', delay: 5, size: 80 },
+            { icon: <FiLayers />, top: '8%', left: '55%', delay: 3, size: 90 },
+            { icon: <FiBox />, top: '85%', left: '45%', delay: 6, size: 110 }
+          ].map((item, i) => (
+            <motion.div
+              key={i}
+              className="translucent-icon"
+              initial={{ opacity: 0, scale: 0.8 }}
+              animate={{ 
+                opacity: [0, 0.08, 0],
+                scale: [1, 1.1, 1],
+                y: [0, -30, 0],
+                rotate: [0, 15, -15, 0]
+              }}
+              transition={{ 
+                duration: 15 + Math.random() * 5, 
+                repeat: Infinity, 
+                delay: item.delay,
+                ease: "easeInOut"
+              }}
+              style={{ 
+                position: 'absolute', 
+                top: item.top, 
+                left: item.left,
+                fontSize: item.size,
+                color: 'white',
+                filter: 'blur(2px)',
+                pointerEvents: 'none'
+              }}
+            >
+              {item.icon}
+            </motion.div>
+          ))}
+        </div>
         
         {/* Particle System */}
         <div className="particles-overlay">
