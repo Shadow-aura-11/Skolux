@@ -74,6 +74,16 @@ export default function SettingsPage() {
   const [editClassIdx, setEditClassIdx] = useState(null)
   const [editRouteIdx, setEditRouteIdx] = useState(null)
 
+  // Security Credentials State
+  const activeConfig = getActiveSchool()
+  const [credData, setCredData] = useState({
+    adminUsername: activeConfig.adminUsername || 'admin',
+    adminPassword: activeConfig.adminPassword || 'admin123',
+    teacherUsername: activeConfig.teacherUsername || 'teacher',
+    teacherPassword: activeConfig.teacherPassword || 'teacher123'
+  })
+  const [credSaved, setCredSaved] = useState(false)
+
   useEffect(() => {
     const savedFee = localStorage.getItem(`erp_${schoolId}_global_fee_config_${currentSession}`) || localStorage.getItem(`erp_${schoolId}_global_fee_config`)
     if (savedFee) setGlobalFeeConfig(JSON.parse(savedFee))
@@ -326,14 +336,6 @@ export default function SettingsPage() {
         )
 
       case 'security':
-        const [credData, setCredData] = useState({
-          adminUsername: getActiveSchool().adminUsername || 'admin',
-          adminPassword: getActiveSchool().adminPassword || 'admin123',
-          teacherUsername: getActiveSchool().teacherUsername || 'teacher',
-          teacherPassword: getActiveSchool().teacherPassword || 'teacher123'
-        })
-        const [credSaved, setCredSaved] = useState(false)
-
         const handleSaveCredentials = (e) => {
           e.preventDefault()
           const fullConfig = getActiveSchool()
