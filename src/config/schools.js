@@ -104,6 +104,23 @@ const DEFAULT_CONFIGS = {
       { icon: "FiActivity", title: "Live Tracking", desc: "Watch your child's activities via our secure mobile app." },
       { icon: "FiHeart", title: "Organic Meals", desc: "Nutritionist-approved healthy meals prepared fresh daily." }
     ]
+  },
+  pk: {
+    name: "PK School",
+    shortName: "PK",
+    logoText: "PK",
+    logoColor: "#000000",
+    themeColor: "#000000",
+    welcomeMessage: "Welcome to PK Digital Campus",
+    adminUsername: "admin",
+    adminPassword: "admin123",
+    teacherUsername: "teacher",
+    teacherPassword: "teacher123",
+    layout: "modern",
+    stats: [
+      { label: 'Students', val: '500+' },
+      { label: 'Teachers', val: '30+' }
+    ]
   }
 };
 
