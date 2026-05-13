@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react'
 import { useAuth } from '../../context/AuthContext'
 import { useData } from '../../context/DataContext'
 import { useParams } from 'react-router-dom'
+import { getActiveSchool, saveSchoolConfig } from '../../config/schools'
 import {
   FiSettings, FiUser, FiLock, FiBell, FiShield,
   FiSave, FiCheckCircle, FiCalendar, FiAlertTriangle, FiRefreshCw, FiPlus, FiTrash2, FiDollarSign,
@@ -325,13 +326,94 @@ export default function SettingsPage() {
         )
 
       case 'security':
+        const [credData, setCredData] = useState({
+          adminUsername: getActiveSchool().adminUsername || 'admin',
+          adminPassword: getActiveSchool().adminPassword || 'admin123',
+          teacherUsername: getActiveSchool().teacherUsername || 'teacher',
+          teacherPassword: getActiveSchool().teacherPassword || 'teacher123'
+        })
+        const [credSaved, setCredSaved] = useState(false)
+
+        const handleSaveCredentials = (e) => {
+          e.preventDefault()
+          const fullConfig = getActiveSchool()
+          const updatedConfig = {
+            ...fullConfig,
+            adminUsername: credData.adminUsername,
+            adminPassword: credData.adminPassword,
+            teacherUsername: credData.teacherUsername,
+            teacherPassword: credData.teacherPassword
+          }
+          // Remove the 'key' property before saving as it's added dynamically by getActiveSchool
+          delete updatedConfig.key
+          
+          saveSchoolConfig(schoolId, updatedConfig)
+          setCredSaved(true)
+          setTimeout(() => setCredSaved(false), 3000)
+          
+          // Optionally logout or update profile if admin changed their own info
+          if (user.role === 'admin' && (credData.adminUsername !== user.username)) {
+            alert('Admin username changed. Please log in again with new credentials.')
+            window.location.reload()
+          }
+        }
+
         return (
-          <form onSubmit={e => { e.preventDefault(); alert('Password update logic not implemented in demo.'); }} style={{ padding: 'var(--space-6)', maxWidth: 400 }}>
-            <div className="form-group"><label className="form-label">Current Password</label><input className="form-input" type="password" placeholder="••••••••" /></div>
-            <div className="form-group"><label className="form-label">New Password</label><input className="form-input" type="password" placeholder="••••••••" /></div>
-            <div className="form-group"><label className="form-label">Confirm New Password</label><input className="form-input" type="password" placeholder="••••••••" /></div>
-            <div style={{ marginTop: 20 }}><button type="submit" className="btn btn-primary"><FiSave /> Update Password</button></div>
-          </form>
+          <div style={{ padding: 'var(--space-6)' }}>
+            <div style={{ marginBottom: 30 }}>
+              <h3 style={{ fontWeight: 800, fontSize: 18, marginBottom: 8 }}>Security & Access Control</h3>
+              <p style={{ fontSize: 13, color: 'var(--gray-500)' }}>Manage the primary credentials for this school's ERP deployment.</p>
+            </div>
+
+            <form onSubmit={handleSaveCredentials} style={{ display: 'flex', flexDirection: 'column', gap: 24 }}>
+              {/* Admin Credentials */}
+              <div style={{ padding: 24, background: 'var(--primary-50)', borderRadius: 20, border: '1px solid var(--primary-100)' }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 20, color: 'var(--primary-700)', fontWeight: 800, fontSize: 14 }}>
+                  <FiShield /> ADMIN ACCOUNT
+                </div>
+                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 20 }}>
+                  <div className="form-group">
+                    <label className="form-label">Admin Username</label>
+                    <input className="form-input" value={credData.adminUsername} onChange={e => setCredData({...credData, adminUsername: e.target.value})} />
+                  </div>
+                  <div className="form-group">
+                    <label className="form-label">Admin Password</label>
+                    <input className="form-input" type="text" value={credData.adminPassword} onChange={e => setCredData({...credData, adminPassword: e.target.value})} />
+                  </div>
+                </div>
+              </div>
+
+              {/* Teacher Credentials */}
+              <div style={{ padding: 24, background: '#fffbeb', borderRadius: 20, border: '1px solid #fef3c7' }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 20, color: '#d97706', fontWeight: 800, fontSize: 14 }}>
+                  <FiUser /> TEACHER ACCOUNT (DEFAULT)
+                </div>
+                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 20 }}>
+                  <div className="form-group">
+                    <label className="form-label">Teacher Username</label>
+                    <input className="form-input" value={credData.teacherUsername} onChange={e => setCredData({...credData, teacherUsername: e.target.value})} />
+                  </div>
+                  <div className="form-group">
+                    <label className="form-label">Teacher Password</label>
+                    <input className="form-input" type="text" value={credData.teacherPassword} onChange={e => setCredData({...credData, teacherPassword: e.target.value})} />
+                  </div>
+                </div>
+              </div>
+
+              <div style={{ display: 'flex', alignItems: 'center', gap: 15, marginTop: 10 }}>
+                <button type="submit" className="btn btn-primary" style={{ flex: 1 }}>
+                  {credSaved ? <><FiCheckCircle /> Credentials Updated</> : <><FiSave /> Save Credentials</>}
+                </button>
+              </div>
+
+              <div style={{ background: '#fff1f2', padding: 16, borderRadius: 12, border: '1px solid #fecdd3', display: 'flex', gap: 12 }}>
+                <FiAlertTriangle style={{ color: '#e11d48', marginTop: 2 }} />
+                <div style={{ fontSize: 12, color: '#be123c', lineHeight: 1.5 }}>
+                  <strong>Security Note:</strong> Changing these credentials will affect all staff members using the default logins. Ensure you communicate the new details to your team.
+                </div>
+              </div>
+            </form>
+          </div>
         )
 
       case 'notifications':
