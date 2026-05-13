@@ -273,13 +273,13 @@ export const AuthProvider = ({ children }) => {
 
   const agencyLogin = (username, password) => {
     setError('')
-    // Hardcoded agency admin for now - you can change these
-    if (username === 'agency' && password === 'agency123') {
-      const admin = { id: 'AGENCY001', name: 'Agency Admin', role: 'agency' }
+    // Hardcoded Skolux Agency Admin
+    if (username === 'admin' && password === 'skolux123') {
+      const admin = { id: 'AGENCY001', name: 'Skolux Admin', role: 'agency' }
       setAgencyUser(admin)
       return true
     }
-    setError('Invalid agency credentials.')
+    setError('Invalid Skolux agency credentials.')
     return false
   }
 
