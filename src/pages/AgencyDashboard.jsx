@@ -73,7 +73,10 @@ export default function AgencyDashboard() {
   const handleSave = (e) => {
     e.preventDefault()
     
-    saveSchoolConfig(formData.subdomain, {
+    // Use editingSubdomain if we're in edit mode, otherwise use the new subdomain from the form
+    const targetSubdomain = editingSubdomain || formData.subdomain
+    
+    saveSchoolConfig(targetSubdomain, {
       name: formData.name,
       shortName: formData.shortName,
       logoText: formData.logoText,
@@ -87,10 +90,11 @@ export default function AgencyDashboard() {
       teacherPassword: formData.teacherPassword
     })
 
-    // If this is a new deployment, initialize its fresh data set
+    // Only initialize fresh data for brand new deployments
     if (!editingSubdomain) {
-      initializeSchoolData(formData.subdomain, formData.name);
+      initializeSchoolData(targetSubdomain, formData.name);
     }
+    
     refreshSchools()
     setShowAddModal(false)
     resetForm()
