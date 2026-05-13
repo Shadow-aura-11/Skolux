@@ -192,10 +192,11 @@ export const AuthProvider = ({ children }) => {
     // 1. Check School-Specific Credentials (Admin/Teacher)
     if (school) {
       const u = username.toLowerCase()
-      // Admin Check
-      const schoolAdminUser = school.adminUsername || 'admin'
-      const schoolAdminPass = school.adminPassword || 'admin123'
-      if (u === schoolAdminUser.toLowerCase() && password === schoolAdminPass) {
+      // Admin Check (Now pulled directly from school config)
+      const schoolAdminUser = school.adminUsername
+      const schoolAdminPass = school.adminPassword
+      
+      if (schoolAdminUser && u === schoolAdminUser.toLowerCase() && password === schoolAdminPass) {
         setUser({
           id: `ADM_${school.key.toUpperCase()}`,
           username: schoolAdminUser,
@@ -207,7 +208,23 @@ export const AuthProvider = ({ children }) => {
         return true
       }
 
-      // Teacher/Staff Check (Dynamic)
+      // Teacher Check (Now pulled directly from school config)
+      const schoolTeacherUser = school.teacherUsername
+      const schoolTeacherPass = school.teacherPassword
+      
+      if (schoolTeacherUser && u === schoolTeacherUser.toLowerCase() && password === schoolTeacherPass) {
+        setUser({
+          id: `TEA_${school.key.toUpperCase()}`,
+          username: schoolTeacherUser,
+          role: 'teacher',
+          name: `${school.shortName} Teacher`,
+          designation: 'Faculty Member',
+          avatar: 'TE'
+        })
+        return true
+      }
+
+      // Staff Check (Dynamic via Staff Module)
       const staffKey = `erp_${school.key}_staff_global`
       const staffList = JSON.parse(localStorage.getItem(staffKey) || '[]')
       const staffFound = staffList.find(
@@ -226,24 +243,9 @@ export const AuthProvider = ({ children }) => {
         })
         return true
       }
-
-      // Teacher Check (Legacy/Default)
-      const schoolTeacherUser = school.teacherUsername || 'teacher'
-      const schoolTeacherPass = school.teacherPassword || 'teacher123'
-      if (u === schoolTeacherUser.toLowerCase() && password === schoolTeacherPass) {
-        setUser({
-          id: `TEA_${school.key.toUpperCase()}`,
-          username: schoolTeacherUser,
-          role: 'teacher',
-          name: `${school.shortName} Teacher`,
-          designation: 'Faculty Member',
-          avatar: 'TE'
-        })
-        return true
-      }
     }
 
-    // 2. Check Dynamic Users (Students, etc.) from the tenant's students list
+    // 2. Check Dynamic Users (Students)
     const stuKey = `erp_${school.key}_students_${currentSession}`
     const studentsList = JSON.parse(localStorage.getItem(stuKey) || localStorage.getItem(`erp_${school.key}_students`) || '[]')
     const found = studentsList.find(
